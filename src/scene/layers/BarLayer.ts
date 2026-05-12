@@ -1,14 +1,15 @@
-import { Mesh, PlaneGeometry, ShaderMaterial, type WebGLRenderer } from 'three'
+import { Mesh, PlaneGeometry, ShaderMaterial, type IUniform, type WebGLRenderer } from 'three'
 import type { BarState } from '@/composables/useBar'
 import { tokenAsRgb } from '@/styles/tokens'
 
 export interface BarLayerUniforms {
-  uFill: { value: number }
-  uGlow: { value: number }
-  uMood: { value: number }
-  uTime: { value: number }
-  uColorBase: { value: [number, number, number] }
-  uColorGlow: { value: [number, number, number] }
+  uFill: IUniform<number>
+  uGlow: IUniform<number>
+  uMood: IUniform<number>
+  uTime: IUniform<number>
+  uColorBase: IUniform<[number, number, number]>
+  uColorGlow: IUniform<[number, number, number]>
+  [uniform: string]: IUniform<unknown>
 }
 
 export class BarLayer {

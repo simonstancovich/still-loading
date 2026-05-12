@@ -3,13 +3,15 @@ import {
   Float32BufferAttribute,
   Points,
   ShaderMaterial,
+  type IUniform,
   type WebGLRenderer,
 } from 'three'
 import type { DustParticle } from '@/composables/useDust'
 
 export interface DustLayerUniforms {
-  uTime: { value: number }
-  uPixelRatio: { value: number }
+  uTime: IUniform<number>
+  uPixelRatio: IUniform<number>
+  [uniform: string]: IUniform<unknown>
 }
 
 export class DustLayer {

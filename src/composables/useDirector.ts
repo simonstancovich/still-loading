@@ -1,8 +1,8 @@
-import { readonly, ref, type Readonly, type Ref } from 'vue'
+import { readonly, ref, type DeepReadonly, type Ref } from 'vue'
 import type { DirectorState } from '@/lib/director-types'
 
 export interface DirectorApi {
-  state: Readonly<Ref<DirectorState>>
+  state: DeepReadonly<Ref<DirectorState>>
   submitHate: (text: string) => void
   submitLove: (text: string) => void
   flagSafetyConcern: () => void
@@ -24,7 +24,7 @@ export function useDirector(): DirectorApi {
   })
 
   return {
-    state: readonly(state) as Readonly<Ref<DirectorState>>,
+    state: readonly(state),
     submitHate: () => {
       throw new Error('useDirector.submitHate: not implemented')
     },

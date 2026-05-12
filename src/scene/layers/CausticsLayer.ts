@@ -1,9 +1,10 @@
-import { Mesh, PlaneGeometry, ShaderMaterial, type WebGLRenderer } from 'three'
+import { Mesh, PlaneGeometry, ShaderMaterial, type IUniform, type WebGLRenderer } from 'three'
 
 export interface CausticsLayerUniforms {
-  uTime: { value: number }
-  uIntensity: { value: number }
-  uScale: { value: number }
+  uTime: IUniform<number>
+  uIntensity: IUniform<number>
+  uScale: IUniform<number>
+  [uniform: string]: IUniform<unknown>
 }
 
 export class CausticsLayer {
