@@ -1,10 +1,11 @@
-import { Mesh, PlaneGeometry, ShaderMaterial, type WebGLRenderer } from 'three'
+import { Mesh, PlaneGeometry, ShaderMaterial, type IUniform, type WebGLRenderer } from 'three'
 import { tokenAsRgb } from '@/styles/tokens'
 
 export interface VoidLayerUniforms {
-  uTime: { value: number }
-  uBreath: { value: number }
-  uPaletteBase: { value: [number, number, number] }
+  uTime: IUniform<number>
+  uBreath: IUniform<number>
+  uPaletteBase: IUniform<[number, number, number]>
+  [uniform: string]: IUniform<unknown>
 }
 
 export class VoidLayer {
