@@ -13,14 +13,15 @@ const line = ref<string | null>(null)
 <style scoped>
 .intimate-corner {
   position: fixed;
-  right: 1.5rem;
-  bottom: 1.5rem;
+  right: var(--space-4);
+  bottom: var(--space-4);
   pointer-events: none;
+  z-index: var(--z-overlay);
 }
 
 .intimate-line {
-  font-family: 'Caveat', cursive;
-  font-size: 1rem;
-  color: var(--token-ink-faint, #00000055);
+  font-family: var(--type-handwriting);
+  font-size: var(--size-corner);
+  color: var(--color-ink-faint);
 }
 </style>

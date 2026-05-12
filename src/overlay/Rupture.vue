@@ -16,8 +16,9 @@ const isVisible = computed(() => props.rupture.state.value.phase !== 'idle')
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: #000;
+  background: var(--color-rupture-black);
   opacity: 0;
+  z-index: var(--z-rupture);
 }
 
 .rupture[data-phase='black'] {
@@ -25,7 +26,7 @@ const isVisible = computed(() => props.rupture.state.value.phase !== 'idle')
 }
 
 .rupture[data-phase='bloom'] {
-  background: radial-gradient(circle at 50% 50%, #fff8e7 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 50%, var(--color-rupture-bloom) 0%, transparent 70%);
   opacity: 0.85;
 }
 </style>

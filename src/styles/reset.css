@@ -14,9 +14,9 @@ body,
 }
 
 body {
-  background: var(--token-bg, #f6f4ef);
-  color: var(--token-ink, #2a2a28);
-  font-family: var(--type-handwriting, 'Caveat', cursive);
+  background: var(--color-bg-base);
+  color: var(--color-ink-base);
+  font-family: var(--type-handwriting);
   overflow: hidden;
   cursor: none;
 }
