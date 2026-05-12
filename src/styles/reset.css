@@ -1,0 +1,29 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background: var(--token-bg, #f6f4ef);
+  color: var(--token-ink, #2a2a28);
+  font-family: var(--type-handwriting, 'Caveat', cursive);
+  overflow: hidden;
+  cursor: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
