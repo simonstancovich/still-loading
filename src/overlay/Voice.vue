@@ -20,12 +20,13 @@ const text = computed(() => props.voice.currentLine.value?.text ?? '')
   display: grid;
   place-items: center;
   pointer-events: none;
+  z-index: var(--z-voice);
 }
 
 .voice-line {
-  font-family: 'Caveat', cursive;
-  font-size: 2rem;
+  font-family: var(--type-handwriting);
+  font-size: var(--size-voice);
   line-height: 1;
-  color: var(--token-ink, #2a2a28);
+  color: var(--color-ink-base);
 }
 </style>

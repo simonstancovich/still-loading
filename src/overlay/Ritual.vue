@@ -38,15 +38,16 @@ function submit(): void {
   display: grid;
   place-items: center;
   pointer-events: auto;
+  z-index: var(--z-ritual);
 }
 
 .ritual-input {
-  font-family: 'Caveat', cursive;
-  font-size: 2rem;
+  font-family: var(--type-handwriting);
+  font-size: var(--size-voice);
   border: none;
-  border-bottom: 1px solid var(--token-ink-faint, #00000022);
+  border-bottom: 1px solid var(--color-ink-faint);
   background: transparent;
-  color: var(--token-ink, #2a2a28);
+  color: var(--color-ink-base);
   outline: none;
   width: min(60ch, 80vw);
   text-align: center;

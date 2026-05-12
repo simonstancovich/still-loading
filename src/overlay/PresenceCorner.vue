@@ -14,21 +14,22 @@ defineProps<{ presence: PresenceApi }>()
 <style scoped>
 .presence-corner {
   position: fixed;
-  left: 1.5rem;
-  bottom: 1.5rem;
+  left: var(--space-4);
+  bottom: var(--space-4);
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
+  z-index: var(--z-overlay);
 }
 
 .presence-line {
-  font-family: 'Caveat', cursive;
-  font-size: 1rem;
-  color: var(--token-ink-faint, #00000055);
+  font-family: var(--type-handwriting);
+  font-size: var(--size-corner);
+  color: var(--color-ink-faint);
 }
 
 .presence-faint {
-  color: var(--token-ink-fainter, #00000033);
+  color: var(--color-ink-fainter);
 }
 </style>
