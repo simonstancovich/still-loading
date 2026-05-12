@@ -1,4 +1,5 @@
 import { Mesh, PlaneGeometry, ShaderMaterial, type WebGLRenderer } from 'three'
+import { tokenAsRgb } from '@/styles/tokens'
 
 export interface VoidLayerUniforms {
   uTime: { value: number }
@@ -15,7 +16,7 @@ export class VoidLayer {
     this.uniforms = {
       uTime: { value: 0 },
       uBreath: { value: 0 },
-      uPaletteBase: { value: [0.964, 0.957, 0.937] },
+      uPaletteBase: { value: tokenAsRgb('color.bg.base') },
     }
     this.material = new ShaderMaterial({
       uniforms: this.uniforms,

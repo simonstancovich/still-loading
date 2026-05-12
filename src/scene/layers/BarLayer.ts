@@ -1,11 +1,14 @@
 import { Mesh, PlaneGeometry, ShaderMaterial, type WebGLRenderer } from 'three'
 import type { BarState } from '@/composables/useBar'
+import { tokenAsRgb } from '@/styles/tokens'
 
 export interface BarLayerUniforms {
   uFill: { value: number }
   uGlow: { value: number }
   uMood: { value: number }
   uTime: { value: number }
+  uColorBase: { value: [number, number, number] }
+  uColorGlow: { value: [number, number, number] }
 }
 
 export class BarLayer {
@@ -19,6 +22,8 @@ export class BarLayer {
       uGlow: { value: 0 },
       uMood: { value: 0 },
       uTime: { value: 0 },
+      uColorBase: { value: tokenAsRgb('color.bar.dim') },
+      uColorGlow: { value: tokenAsRgb('color.bar.bright') },
     }
     this.material = new ShaderMaterial({
       uniforms: this.uniforms,
