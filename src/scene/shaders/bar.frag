@@ -4,11 +4,13 @@ uniform float uFill;
 uniform float uGlow;
 uniform float uMood;
 uniform float uTime;
+uniform vec3 uColorBase;
+uniform vec3 uColorGlow;
 
 varying vec2 vUv;
 
 void main() {
   float fillMask = step(vUv.x, uFill);
-  vec3 color = mix(vec3(0.55, 0.55, 0.55), vec3(1.0, 0.92, 0.78), uGlow);
+  vec3 color = mix(uColorBase, uColorGlow, uGlow);
   gl_FragColor = vec4(color, fillMask);
 }

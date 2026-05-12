@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import { tokens } from '@/styles/tokens'
 
 export interface SkyPalette {
   base: string
@@ -13,12 +14,7 @@ export interface SkyApi {
 }
 
 export function useSky(): SkyApi {
-  const palette = ref<SkyPalette>({
-    base: '#f6f4ef',
-    warm: '#f8e7d4',
-    cool: '#e3e8ec',
-    accent: '#c0a07a',
-  })
+  const palette = ref<SkyPalette>({ ...tokens.palette.preflight })
   const sunAltitude = ref(0)
   return { palette, sunAltitude }
 }
