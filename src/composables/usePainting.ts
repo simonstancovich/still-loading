@@ -18,8 +18,6 @@ export function usePainting(): PaintingApi {
     reveal: () => {
       throw new Error('usePainting.reveal: not implemented')
     },
-    exportPng: () => {
-      throw new Error('usePainting.exportPng: not implemented')
-    },
+    exportPng: () => Promise.reject(new Error('usePainting.exportPng: not implemented')),
   }
 }

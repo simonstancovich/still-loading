@@ -22,9 +22,7 @@ export function useHandwriting(): HandwritingApi {
   const ready = ref(false)
   return {
     ready,
-    loadAtlas: () => {
-      throw new Error('useHandwriting.loadAtlas: not implemented')
-    },
+    loadAtlas: () => Promise.reject(new Error('useHandwriting.loadAtlas: not implemented')),
     renderText: () => {
       throw new Error('useHandwriting.renderText: not implemented')
     },
