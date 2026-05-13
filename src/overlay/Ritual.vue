@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { RitualApi } from '@/composables/useRitual'
+import { computed, ref } from 'vue'
+import { useRitual } from '@/composables/useRitual'
 
-const props = defineProps<{ ritual: RitualApi }>()
-
+const ritual = useRitual()
 const input = ref('')
+
+const isOpen = computed(() => ritual.state.value !== 'idle' && ritual.state.value !== 'resolved')
 
 function submit(): void {
   const value = input.value.trim()
   if (value.length === 0) return
-  if (props.ritual.state.value === 'askingHate' || props.ritual.state.value === 'receivingHate') {
-    props.ritual.submitHate(value)
+  if (ritual.state.value === 'askingHate' || ritual.state.value === 'receivingHate') {
+    ritual.submitHate(value)
   } else {
-    props.ritual.submitLove(value)
+    ritual.submitLove(value)
   }
   input.value = ''
 }
 </script>
 
 <template>
-  <form class="ritual" @submit.prevent="submit">
+  <form v-if="isOpen" class="ritual" @submit.prevent="submit">
     <input
       v-model="input"
       class="ritual-input"

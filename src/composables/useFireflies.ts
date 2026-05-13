@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export interface FireflyPath {
   word: string
@@ -11,7 +11,8 @@ export interface FireflyApi {
   position: Ref<{ x: number; y: number } | null>
 }
 
-export function useFireflies(_director: DirectorApi): FireflyApi {
+export function useFireflies(): FireflyApi {
+  const _director = injectDirector()
   const active = ref<FireflyPath | null>(null)
   const position = ref<{ x: number; y: number } | null>(null)
   return { active, position }

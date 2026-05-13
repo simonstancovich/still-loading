@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { RuptureApi } from '@/composables/useRupture'
+import { useRupture } from '@/composables/useRupture'
 
-const props = defineProps<{ rupture: RuptureApi }>()
-
-const isVisible = computed(() => props.rupture.state.value.phase !== 'idle')
+const rupture = useRupture()
+const isVisible = computed(() => rupture.state.value.phase !== 'idle')
 </script>
 
 <template>

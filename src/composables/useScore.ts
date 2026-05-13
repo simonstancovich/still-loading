@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export interface ScoreApi {
   isPlaying: Ref<boolean>
@@ -10,7 +10,8 @@ export interface ScoreApi {
   setVolume: (v: number) => void
 }
 
-export function useScore(_director: DirectorApi): ScoreApi {
+export function useScore(): ScoreApi {
+  const _director = injectDirector()
   const isPlaying = ref(false)
   const volume = ref(0.7)
   const pulse = ref(0)

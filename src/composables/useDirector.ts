@@ -1,4 +1,4 @@
-import { readonly, ref, type DeepReadonly, type Ref } from 'vue'
+import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
 import type { DirectorState } from '@/lib/director-types'
 
 export interface DirectorApi {
@@ -10,8 +10,8 @@ export interface DirectorApi {
   resume: () => void
 }
 
-export function useDirector(): DirectorApi {
-  const state = ref<DirectorState>({
+function createInitialState(): DirectorState {
+  return {
     act: 'preflight',
     mood: 'playful',
     ritual: 'idle',
@@ -21,10 +21,16 @@ export function useDirector(): DirectorApi {
     presenceCount: 1,
     lifetimeCount: 0,
     paused: false,
-  })
+  }
+}
 
+const directorState = ref<DirectorState>(createInitialState())
+
+let cachedApi: DirectorApi | null = null
+
+function buildApi(): DirectorApi {
   return {
-    state: readonly(state),
+    state: readonly(directorState),
     submitHate: () => {
       throw new Error('useDirector.submitHate: not implemented')
     },
@@ -41,4 +47,26 @@ export function useDirector(): DirectorApi {
       throw new Error('useDirector.resume: not implemented')
     },
   }
+}
+
+export function useDirector(): DirectorApi {
+  cachedApi ??= buildApi()
+  return cachedApi
+}
+
+export const DIRECTOR_KEY: InjectionKey<DirectorApi> = Symbol('director')
+
+export function injectDirector(): DirectorApi {
+  const api = inject(DIRECTOR_KEY)
+  if (!api) {
+    throw new Error(
+      'Director not provided. Call app.provide(DIRECTOR_KEY, useDirector()) in main.ts before mount.',
+    )
+  }
+  return api
+}
+
+export function __resetDirectorStateForTests(): void {
+  directorState.value = createInitialState()
+  cachedApi = null
 }

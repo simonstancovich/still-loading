@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { PresenceApi } from '@/composables/usePresence'
+import { usePresence } from '@/composables/usePresence'
 
-defineProps<{ presence: PresenceApi }>()
+const presence = usePresence()
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export type BarMood = 'misbehaving' | 'calm' | 'radiant' | 'held'
 
@@ -16,7 +16,8 @@ export interface BarApi {
   state: Ref<BarState>
 }
 
-export function useBar(_director: DirectorApi): BarApi {
+export function useBar(): BarApi {
+  const _director = injectDirector()
   const state = ref<BarState>({
     positionX: 50,
     positionY: 50,
