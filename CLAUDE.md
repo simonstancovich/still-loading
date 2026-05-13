@@ -24,10 +24,31 @@ A contemplative interactive web piece, twelve minutes long. Four acts: flirt →
 
 If you find yourself wiring two composables together, stop and route through the director instead.
 
+## Three.js and Vue reactivity
+
+Never put a Three.js instance (`WebGLRenderer`, `Scene`, `Mesh`, `Material`, `BufferGeometry`, layer classes that own them) into `ref()` or `reactive()`. Vue would recursively proxy every internal field — including 10,000-float vertex arrays that mutate every frame — and the piece's 16ms frame budget is gone. Three's internal `instanceof` checks can also break on proxied objects.
+
+Use `src/scene/raw.ts`:
+
+```ts
+import { rawShallow, rawShallowNullable, assignRaw } from '@/scene/raw'
+
+// Eagerly constructed
+const renderer = rawShallow(new WebGLRenderer({ canvas }))
+
+// Lazy / null-until-mounted
+const scene = rawShallowNullable<Scene>()
+onMounted(() => assignRaw(scene, new Scene()))
+```
+
+`shallowRef` keeps the slot itself reactive (you can swap renderers, watch for `null → instance`) without tracking the instance's internals. `markRaw` is the lock that prevents accidental re-proxying if the value ever passes through `reactive()` later.
+
+Plain TS classes that own Three.js objects (the `*Layer.ts` files in `src/scene/layers/`) are already correct — they never live in refs.
+
 ## Conventions
 
 - No comments by default. Identifiers should carry meaning. Add a comment only when the *why* is non-obvious.
-- Typed token props for design tokens (not style objects), derived from `src/styles/tokens.css` or a tokens module.
+- Typed token props for design tokens (not style objects), derived from `src/styles/tokens/`. Never use a raw color or size literal in component code — go through `tokens.*` or the `var(--*)` CSS variables, never `var(--x, #fallback)`.
 - Tests at every layer: unit, component, integration, e2e. The director state machine in particular needs a deterministic clock and scripted-input harness — never test against the system clock.
 - Conventional Commits (`chore:`, `feat:`, `fix:`, `docs:`, `test:`). No `Co-Authored-By` trailers.
 - Branch + PR workflow for non-trivial changes. Don't push directly to `main` once the project has any history worth preserving.
