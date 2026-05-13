@@ -18,8 +18,6 @@ export function useConstellations(): ConstellationsApi {
   const points = ref<readonly ConstellationPoint[]>([])
   return {
     points,
-    fetchPoints: () => {
-      throw new Error('useConstellations.fetchPoints: not implemented')
-    },
+    fetchPoints: () => Promise.reject(new Error('useConstellations.fetchPoints: not implemented')),
   }
 }

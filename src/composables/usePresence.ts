@@ -13,11 +13,7 @@ export function usePresence(): PresenceApi {
   return {
     presenceCount,
     lifetimeCount,
-    join: () => {
-      throw new Error('usePresence.join: not implemented')
-    },
-    leave: () => {
-      throw new Error('usePresence.leave: not implemented')
-    },
+    join: () => Promise.reject(new Error('usePresence.join: not implemented')),
+    leave: () => Promise.reject(new Error('usePresence.leave: not implemented')),
   }
 }

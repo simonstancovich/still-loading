@@ -19,9 +19,7 @@ export function useScore(): ScoreApi {
     isPlaying,
     volume,
     pulse,
-    play: () => {
-      throw new Error('useScore.play: not implemented')
-    },
+    play: () => Promise.reject(new Error('useScore.play: not implemented')),
     pause: () => {
       throw new Error('useScore.pause: not implemented')
     },

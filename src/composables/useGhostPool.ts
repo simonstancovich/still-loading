@@ -6,12 +6,8 @@ export interface GhostPoolApi {
 
 export function useGhostPool(): GhostPoolApi {
   return {
-    fetchGifts: () => {
-      throw new Error('useGhostPool.fetchGifts: not implemented')
-    },
-    submitLove: () => {
-      throw new Error('useGhostPool.submitLove: not implemented')
-    },
+    fetchGifts: () => Promise.reject(new Error('useGhostPool.fetchGifts: not implemented')),
+    submitLove: () => Promise.reject(new Error('useGhostPool.submitLove: not implemented')),
     pickGiftsForNothing: () => {
       throw new Error('useGhostPool.pickGiftsForNothing: not implemented')
     },
