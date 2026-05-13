@@ -25,6 +25,13 @@ export default [
   }),
   skipFormatting,
   {
+    name: 'app/tests-allow-inline-components',
+    files: ['**/__tests__/**', '**/*.test.ts', '**/*.spec.ts'],
+    rules: {
+      'vue/one-component-per-file': 'off',
+    },
+  },
+  {
     rules: {
       'vue/multi-word-component-names': 'off',
       '@typescript-eslint/no-explicit-any': 'error',

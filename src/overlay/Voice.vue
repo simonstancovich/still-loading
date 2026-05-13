@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { VoiceApi } from '@/composables/useVoice'
+import { useVoice } from '@/composables/useVoice'
 
-const props = defineProps<{ voice: VoiceApi }>()
-
-const text = computed(() => props.voice.currentLine.value?.text ?? '')
+const voice = useVoice()
+const text = computed(() => voice.currentLine.value?.text ?? '')
 </script>
 
 <template>

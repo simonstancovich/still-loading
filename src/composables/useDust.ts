@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export type DustKind = 'pollen' | 'gold' | 'ash' | 'motes'
 export type DustPersonality = 'curious' | 'shy' | 'indifferent'
@@ -21,7 +21,8 @@ export interface DustApi {
   targetCount: Ref<number>
 }
 
-export function useDust(_director: DirectorApi): DustApi {
+export function useDust(): DustApi {
+  const _director = injectDirector()
   const particles = ref<readonly DustParticle[]>([])
   const targetCount = ref(0)
   return { particles, targetCount }

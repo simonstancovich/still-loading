@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export interface PaintingApi {
   canvas: Ref<HTMLCanvasElement | null>
@@ -8,7 +8,8 @@ export interface PaintingApi {
   exportPng: () => Promise<Blob>
 }
 
-export function usePainting(_director: DirectorApi): PaintingApi {
+export function usePainting(): PaintingApi {
+  const _director = injectDirector()
   const canvas = ref<HTMLCanvasElement | null>(null)
   const isRevealed = ref(false)
   return {

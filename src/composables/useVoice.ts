@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 import type { VoiceLine } from '@/lib/director-types'
 
 export interface VoiceApi {
@@ -7,7 +7,8 @@ export interface VoiceApi {
   history: Ref<readonly string[]>
 }
 
-export function useVoice(_director: DirectorApi): VoiceApi {
+export function useVoice(): VoiceApi {
+  const _director = injectDirector()
   const currentLine = ref<VoiceLine | null>(null)
   const history = ref<readonly string[]>([])
   return { currentLine, history }

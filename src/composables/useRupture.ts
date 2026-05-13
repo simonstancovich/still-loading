@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export interface RuptureState {
   phase: 'idle' | 'black' | 'bloom'
@@ -12,7 +12,8 @@ export interface RuptureApi {
   trigger: (intensity: number) => void
 }
 
-export function useRupture(_director: DirectorApi): RuptureApi {
+export function useRupture(): RuptureApi {
+  const _director = injectDirector()
   const state = ref<RuptureState>({ phase: 'idle', startedAt: 0, intensity: 0 })
   return {
     state,

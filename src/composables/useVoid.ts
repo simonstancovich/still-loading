@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { DirectorApi } from '@/composables/useDirector'
+import { injectDirector } from '@/composables/useDirector'
 
 export interface VoidParams {
   breathingPulse: number
@@ -12,7 +12,8 @@ export interface VoidApi {
   params: Ref<VoidParams>
 }
 
-export function useVoid(_director: DirectorApi): VoidApi {
+export function useVoid(): VoidApi {
+  const _director = injectDirector()
   const params = ref<VoidParams>({
     breathingPulse: 0,
     causticsIntensity: 0,
