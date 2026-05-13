@@ -1,5 +1,51 @@
 import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
-import type { DirectorState } from '@/lib/director-types'
+import type { Act, DirectorState } from '@/lib/director-types'
+
+export interface Clock {
+  now(): number
+  start(tick: (now: number) => void): () => void
+}
+
+export const realClock: Clock = {
+  now: () => performance.now(),
+  start(tick) {
+    let raf = requestAnimationFrame(function loop(t) {
+      tick(t)
+      raf = requestAnimationFrame(loop)
+    })
+    return () => {
+      cancelAnimationFrame(raf)
+    }
+  },
+}
+
+export interface VirtualClock extends Clock {
+  advance(ms: number): void
+  setNow(ms: number): void
+}
+
+export function createVirtualClock(initial = 0): VirtualClock {
+  let nowMs = initial
+  let onTick: ((now: number) => void) | null = null
+  return {
+    now: () => nowMs,
+    start(tick) {
+      onTick = tick
+      tick(nowMs)
+      return () => {
+        onTick = null
+      }
+    },
+    advance(ms: number) {
+      nowMs += ms
+      onTick?.(nowMs)
+    },
+    setNow(ms: number) {
+      nowMs = ms
+      onTick?.(nowMs)
+    },
+  }
+}
 
 export interface DirectorApi {
   state: DeepReadonly<Ref<DirectorState>>
@@ -27,6 +73,41 @@ function createInitialState(): DirectorState {
 const directorState = ref<DirectorState>(createInitialState())
 
 let cachedApi: DirectorApi | null = null
+let clockDispose: (() => void) | null = null
+let startedAt = 0
+let totalPausedMs = 0
+let lastTickAt = 0
+
+function evaluateTransitions(sessionMs: number, currentAct: Act): void {
+  if (currentAct === 'preflight' && sessionMs >= 800) {
+    directorState.value.act = 'flirt'
+    return
+  }
+  if (currentAct === 'flirt' && sessionMs >= 90_000) {
+    directorState.value.act = 'settle'
+    return
+  }
+  if (currentAct === 'held' && sessionMs >= 600_000) {
+    directorState.value.act = 'secondCathedral'
+    return
+  }
+  if (currentAct === 'secondCathedral' && sessionMs >= 690_000) {
+    directorState.value.act = 'ending'
+    return
+  }
+}
+
+function applyTime(now: number): void {
+  if (directorState.value.paused) {
+    totalPausedMs += now - lastTickAt
+    lastTickAt = now
+    return
+  }
+  lastTickAt = now
+  const sessionMs = now - startedAt - totalPausedMs
+  directorState.value.sessionMs = sessionMs
+  evaluateTransitions(sessionMs, directorState.value.act)
+}
 
 function buildApi(): DirectorApi {
   return {
@@ -41,10 +122,10 @@ function buildApi(): DirectorApi {
       throw new Error('useDirector.flagSafetyConcern: not implemented')
     },
     pause: () => {
-      throw new Error('useDirector.pause: not implemented')
+      directorState.value.paused = true
     },
     resume: () => {
-      throw new Error('useDirector.resume: not implemented')
+      directorState.value.paused = false
     },
   }
 }
@@ -52,6 +133,19 @@ function buildApi(): DirectorApi {
 export function useDirector(): DirectorApi {
   cachedApi ??= buildApi()
   return cachedApi
+}
+
+export function startDirector(clock: Clock = realClock): void {
+  if (clockDispose) return
+  startedAt = clock.now()
+  lastTickAt = startedAt
+  totalPausedMs = 0
+  clockDispose = clock.start(applyTime)
+}
+
+export function stopDirector(): void {
+  clockDispose?.()
+  clockDispose = null
 }
 
 export const DIRECTOR_KEY: InjectionKey<DirectorApi> = Symbol('director')
@@ -67,6 +161,10 @@ export function injectDirector(): DirectorApi {
 }
 
 export function __resetDirectorStateForTests(): void {
+  stopDirector()
   directorState.value = createInitialState()
   cachedApi = null
+  startedAt = 0
+  totalPausedMs = 0
+  lastTickAt = 0
 }
