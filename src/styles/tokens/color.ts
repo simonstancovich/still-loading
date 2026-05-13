@@ -12,6 +12,7 @@ export const color = {
     cool: '#d8e0e8',
   },
   bar: {
+    track: 'rgba(42, 42, 40, 0.08)',
     dim: '#8c8c88',
     bright: '#fff2d9',
   },
