@@ -1,5 +1,7 @@
-import { ref, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 import type { Act } from '@/lib/director-types'
+import { useDirector } from '@/composables/useDirector'
+import { cursorX, cursorY } from '@/composables/useStillness'
 
 export type BarMood = 'misbehaving' | 'calm' | 'radiant' | 'held'
 
@@ -156,4 +158,48 @@ const barState = ref<BarState>({
 
 export function useBar(): BarApi {
   return { state: barState }
+}
+
+export const SMOOTHING = 0.15
+
+function updateBar(act: Act, sessionMs: number): void {
+  const viewportW = typeof window === 'undefined' ? 1 : window.innerWidth
+  const viewportH = typeof window === 'undefined' ? 1 : window.innerHeight
+  const target = computeBarTarget(act, sessionMs, cursorX.value, cursorY.value, viewportW, viewportH)
+  const s = barState.value
+  s.positionX += (target.x - s.positionX) * SMOOTHING
+  s.positionY += (target.y - s.positionY) * SMOOTHING
+  s.fillPercent = target.fill
+  s.mood = target.mood
+}
+
+let watchStop: (() => void) | null = null
+
+export function startBar(): void {
+  if (watchStop) return
+  const director = useDirector()
+  watchStop = watch(
+    () => director.state.value.sessionMs,
+    () => {
+      updateBar(director.state.value.act, director.state.value.sessionMs)
+    },
+    { flush: 'sync' },
+  )
+}
+
+export function stopBar(): void {
+  watchStop?.()
+  watchStop = null
+}
+
+export function __resetBarForTests(): void {
+  stopBar()
+  barState.value = {
+    positionX: 50,
+    positionY: 50,
+    widthPx: 220,
+    fillPercent: 0,
+    mood: 'calm',
+    glowing: false,
+  }
 }
