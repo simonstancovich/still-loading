@@ -4,6 +4,7 @@ import { DIRECTOR_KEY, realClock, startDirector, useDirector } from '@/composabl
 import { startStillnessTracking } from '@/composables/useStillness'
 import { startVoice } from '@/composables/useVoice'
 import { startBar } from '@/composables/useBar'
+import { startRitual } from '@/composables/useRitual'
 import { wireVisibilityToDirector } from '@/main-wiring'
 import { applyTokensAsCssVariables } from '@/styles/apply'
 
@@ -20,4 +21,5 @@ startDirector(realClock)
 startStillnessTracking(realClock)
 startVoice()
 startBar()
+startRitual()
 wireVisibilityToDirector(director)
