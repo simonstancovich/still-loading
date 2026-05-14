@@ -11,6 +11,9 @@ export const color = {
     warm: '#fff2d9',
     cool: '#d8e0e8',
   },
+  dust: {
+    base: '#c0a07a',
+  },
   bar: {
     track: 'rgba(42, 42, 40, 0.08)',
     dim: '#8c8c88',
