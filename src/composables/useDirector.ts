@@ -79,7 +79,7 @@ let startedAt = 0
 let totalPausedMs = 0
 let lastTickAt = 0
 
-function evaluateTransitions(sessionMs: number, _stillnessMs: number, currentAct: Act): void {
+function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= 800) {
     directorState.value.act = 'flirt'
     return
@@ -88,7 +88,7 @@ function evaluateTransitions(sessionMs: number, _stillnessMs: number, currentAct
     directorState.value.act = 'settle'
     return
   }
-  if (currentAct === 'settle' && sessionMs >= 180_000) {
+  if (currentAct === 'settle' && (sessionMs >= 180_000 || stillnessMs >= 8_000)) {
     directorState.value.act = 'cathedral'
     return
   }

@@ -94,3 +94,41 @@ describe('director — settle → cathedral', () => {
     stopDirector()
   })
 })
+
+describe('director — settle → cathedral OR stillness > 8s', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('transitions early when stillness exceeds 8s during settle', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('settle', clock)
+    recordMove(clock.now())
+
+    clock.advance(7_999)
+    expect(director.state.value.act).toBe('settle')
+
+    clock.advance(2)
+    expect(director.state.value.act).toBe('cathedral')
+
+    stopDirector()
+  })
+
+  it('does not transition early if the cursor keeps moving', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('settle', clock)
+
+    for (let i = 0; i < 50; i++) {
+      recordMove(clock.now())
+      clock.advance(1000)
+    }
+    expect(director.state.value.act).toBe('settle')
+
+    stopDirector()
+  })
+})
