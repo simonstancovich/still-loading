@@ -3,11 +3,22 @@ import {
   HATE_ECHO_COUNT,
   __resetRitualForTests,
   beginRitual,
+  startRitual,
+  stopRitual,
   submitHate,
   submitLove,
   useRitual,
 } from '@/composables/useRitual'
 import { seedGifts } from '@/corpus/seedGifts'
+import {
+  __resetDirectorStateForTests,
+  __setActForTests,
+  createVirtualClock,
+  startDirector,
+  stopDirector,
+  useDirector,
+} from '@/composables/useDirector'
+import { __resetStillnessForTests } from '@/composables/useStillness'
 
 describe('useRitual — submitHate (happy path)', () => {
   beforeEach(() => {
@@ -117,5 +128,45 @@ describe('useRitual — submitLove resolution', () => {
   it('does nothing if submitLove is called while not in askingLove', () => {
     submitLove('my laugh')
     expect(useRitual().loveResolution.value).toBeNull()
+  })
+})
+
+describe('useRitual — startRitual act-watch', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+    __resetRitualForTests()
+  })
+
+  it('opens the ritual (askingHate) when the director enters invite', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startRitual()
+
+    expect(useRitual().state.value).toBe('idle')
+
+    __setActForTests('invite', clock)
+    clock.advance(1)
+
+    expect(useRitual().state.value).toBe('askingHate')
+
+    stopRitual()
+    stopDirector()
+  })
+
+  it('stopRitual halts the act-watch', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startRitual()
+    stopRitual()
+
+    __setActForTests('invite', clock)
+    clock.advance(1)
+
+    expect(useRitual().state.value).toBe('idle')
+
+    stopDirector()
   })
 })
