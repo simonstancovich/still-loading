@@ -171,3 +171,11 @@ export function __resetDirectorStateForTests(): void {
   totalPausedMs = 0
   lastTickAt = 0
 }
+
+export function __setActForTests(act: Act, clock: Clock): void {
+  directorState.value.act = act
+  directorState.value.sessionMs = 0
+  startedAt = clock.now()
+  totalPausedMs = 0
+  lastTickAt = startedAt
+}
