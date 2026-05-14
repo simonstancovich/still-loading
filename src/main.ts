@@ -3,6 +3,7 @@ import App from './App.vue'
 import { DIRECTOR_KEY, realClock, startDirector, useDirector } from '@/composables/useDirector'
 import { startStillnessTracking } from '@/composables/useStillness'
 import { startVoice } from '@/composables/useVoice'
+import { startBar } from '@/composables/useBar'
 import { wireVisibilityToDirector } from '@/main-wiring'
 import { applyTokensAsCssVariables } from '@/styles/apply'
 
@@ -18,4 +19,5 @@ app.mount('#app')
 startDirector(realClock)
 startStillnessTracking(realClock)
 startVoice()
+startBar()
 wireVisibilityToDirector(director)
