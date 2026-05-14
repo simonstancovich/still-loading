@@ -303,7 +303,8 @@ describe('director — mood tracks act', () => {
     const clock = createVirtualClock(0)
     const director = useDirector()
     startDirector(clock)
-    clock.advance(90_000)
+    clock.advance(800) // → flirt
+    clock.advance(89_200) // → settle
     expect(director.state.value.act).toBe('settle')
     expect(director.state.value.mood).toBe('honest')
     stopDirector()
