@@ -1,14 +1,28 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   AVOIDANCE_MAX_NUDGE,
   AVOIDANCE_RADIUS_PX,
   FILL_KEYFRAMES,
   POSITION_Y_KEYFRAMES,
+  SMOOTHING,
+  __resetBarForTests,
   avoidanceNudge,
   barMoodForAct,
   computeBarTarget,
   lerpKeyframes,
+  startBar,
+  stopBar,
+  useBar,
 } from '@/composables/useBar'
+import {
+  __resetDirectorStateForTests,
+  __setActForTests,
+  createVirtualClock,
+  startDirector,
+  stopDirector,
+  useDirector,
+} from '@/composables/useDirector'
+import { __resetStillnessForTests } from '@/composables/useStillness'
 
 describe('useBar — lerpKeyframes', () => {
   const kf: readonly (readonly [number, number])[] = [
@@ -158,5 +172,76 @@ describe('useBar — computeBarTarget', () => {
 
     const tooLate = computeBarTarget('flirt', 85_000, 500, 500, VW, VH)
     expect(tooLate.x).toBe(50)
+  })
+})
+
+describe('useBar — startBar / updateBar', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+    __resetBarForTests()
+  })
+
+  it('updates fillPercent to follow the keyframe timeline as the clock advances', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startBar()
+    __setActForTests('flirt', clock)
+
+    clock.advance(7_000)
+    expect(useBar().state.value.fillPercent).toBe(8)
+
+    clock.advance(27_700 - 7_000)
+    expect(useBar().state.value.fillPercent).toBe(96)
+
+    stopBar()
+    stopDirector()
+  })
+
+  it('eases positionY toward the target rather than snapping', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startBar()
+    __setActForTests('cathedral', clock)
+
+    clock.advance(260_000)
+    const afterOneTick = useBar().state.value.positionY
+    expect(afterOneTick).toBeGreaterThan(33)
+    expect(afterOneTick).toBeLessThan(50)
+    expect(afterOneTick).toBeCloseTo(50 + (33 - 50) * SMOOTHING, 5)
+
+    stopBar()
+    stopDirector()
+  })
+
+  it('stopBar halts updates — later clock advances do not change bar state', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startBar()
+    __setActForTests('flirt', clock)
+    stopBar()
+
+    clock.advance(7_000)
+    expect(useBar().state.value.fillPercent).toBe(0)
+
+    stopDirector()
+  })
+
+  it('startBar is idempotent', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startBar()
+    startBar()
+    __setActForTests('flirt', clock)
+
+    clock.advance(7_000)
+    expect(useBar().state.value.fillPercent).toBe(8)
+
+    stopBar()
+    stopDirector()
   })
 })
