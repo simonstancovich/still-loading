@@ -171,3 +171,49 @@ describe('director — cathedral → invite (AND stillness > 4s)', () => {
     stopDirector()
   })
 })
+
+describe('director — held → secondCathedral', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('transitions at 600s of held time', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('held', clock)
+    recordMove(clock.now())
+
+    clock.advance(599_999)
+    expect(director.state.value.act).toBe('held')
+
+    clock.advance(1)
+    expect(director.state.value.act).toBe('secondCathedral')
+
+    stopDirector()
+  })
+})
+
+describe('director — secondCathedral → ending', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('transitions at 690s', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('secondCathedral', clock)
+    recordMove(clock.now())
+
+    clock.advance(689_999)
+    expect(director.state.value.act).toBe('secondCathedral')
+
+    clock.advance(1)
+    expect(director.state.value.act).toBe('ending')
+
+    stopDirector()
+  })
+})
