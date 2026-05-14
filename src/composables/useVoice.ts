@@ -1,5 +1,6 @@
-import { ref, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 import { voiceLines } from '@/corpus/voiceLines'
+import { useDirector } from '@/composables/useDirector'
 import type { Act, Mood, VoiceLine } from '@/lib/director-types'
 
 export const MIN_GAP_MS = 6_000
@@ -43,7 +44,31 @@ export function scheduleLineForAct(act: Act, mood: Mood, sessionMs: number): voi
   history.value = [...history.value, candidate.text]
 }
 
+let watchStop: (() => void) | null = null
+
+export function startVoice(): void {
+  if (watchStop) return
+  const director = useDirector()
+  watchStop = watch(
+    () => director.state.value.act,
+    () => {
+      scheduleLineForAct(
+        director.state.value.act,
+        director.state.value.mood,
+        director.state.value.sessionMs,
+      )
+    },
+    { flush: 'sync' },
+  )
+}
+
+export function stopVoice(): void {
+  watchStop?.()
+  watchStop = null
+}
+
 export function __resetVoiceForTests(): void {
+  stopVoice()
   currentLine.value = null
   currentLineStartedMs.value = Number.NEGATIVE_INFINITY
   history.value = []
