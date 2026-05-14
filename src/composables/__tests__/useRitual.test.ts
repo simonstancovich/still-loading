@@ -4,8 +4,10 @@ import {
   __resetRitualForTests,
   beginRitual,
   submitHate,
+  submitLove,
   useRitual,
 } from '@/composables/useRitual'
+import { seedGifts } from '@/corpus/seedGifts'
 
 describe('useRitual — submitHate (happy path)', () => {
   beforeEach(() => {
@@ -70,5 +72,50 @@ describe('useRitual — submitHate safety branch', () => {
     beginRitual()
     submitHate('my impatience')
     expect(useRitual().safetyTier.value).toBeNull()
+  })
+})
+
+describe('useRitual — submitLove resolution', () => {
+  beforeEach(() => {
+    __resetRitualForTests()
+  })
+
+  function advanceToAskingLove(): void {
+    beginRitual()
+    submitHate('my impatience')
+  }
+
+  it('a real love-word resolves with source self', () => {
+    advanceToAskingLove()
+    submitLove('my patience with my mother')
+    const ritual = useRitual()
+    expect(ritual.loveResolution.value).toEqual({
+      source: 'self',
+      word: 'my patience with my mother',
+    })
+    expect(ritual.state.value).toBe('resolved')
+  })
+
+  it('an empty answer routes to the nothing branch with a gift word', () => {
+    advanceToAskingLove()
+    submitLove('   ')
+    const ritual = useRitual()
+    expect(ritual.loveResolution.value?.source).toBe('gift')
+    expect(seedGifts).toContain(ritual.loveResolution.value?.word)
+    expect(ritual.state.value).toBe('resolved')
+  })
+
+  it('"nothing", "idk", "none" all route to the nothing branch', () => {
+    for (const answer of ['nothing', 'idk', 'none', 'Nothing.']) {
+      __resetRitualForTests()
+      advanceToAskingLove()
+      submitLove(answer)
+      expect(useRitual().loveResolution.value?.source, answer).toBe('gift')
+    }
+  })
+
+  it('does nothing if submitLove is called while not in askingLove', () => {
+    submitLove('my laugh')
+    expect(useRitual().loveResolution.value).toBeNull()
   })
 })
