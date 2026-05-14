@@ -217,3 +217,35 @@ describe('director — secondCathedral → ending', () => {
     stopDirector()
   })
 })
+
+describe('director — ending → longTail (720s AND not paused)', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('transitions at 720s when the page is visible (not paused)', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('ending', clock)
+
+    clock.advance(720_000)
+    expect(director.state.value.act).toBe('longTail')
+
+    stopDirector()
+  })
+
+  it('does not transition while paused', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('ending', clock)
+    director.pause()
+
+    clock.advance(10 * 720_000)
+    expect(director.state.value.act).toBe('ending')
+
+    stopDirector()
+  })
+})

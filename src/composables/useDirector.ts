@@ -104,6 +104,10 @@ function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct:
     directorState.value.act = 'ending'
     return
   }
+  if (currentAct === 'ending' && sessionMs >= 720_000) {
+    directorState.value.act = 'longTail'
+    return
+  }
 }
 
 function applyTime(now: number): void {
