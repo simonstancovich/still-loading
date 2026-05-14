@@ -1,4 +1,5 @@
 import { ref, type Ref } from 'vue'
+import type { Act } from '@/lib/director-types'
 
 export type BarMood = 'misbehaving' | 'calm' | 'radiant' | 'held'
 
@@ -58,6 +59,23 @@ export function lerpKeyframes(keyframes: readonly Keyframe[], t: number): number
     }
   }
   return last[1]
+}
+
+const MOOD_BY_ACT: Readonly<Record<Act, BarMood>> = {
+  preflight: 'calm',
+  flirt: 'misbehaving',
+  settle: 'calm',
+  cathedral: 'calm',
+  invite: 'calm',
+  ritual: 'calm',
+  held: 'held',
+  secondCathedral: 'radiant',
+  ending: 'radiant',
+  longTail: 'calm',
+}
+
+export function barMoodForAct(act: Act): BarMood {
+  return MOOD_BY_ACT[act]
 }
 
 const barState = ref<BarState>({
