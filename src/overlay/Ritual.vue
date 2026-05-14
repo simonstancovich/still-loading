@@ -1,26 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRitual } from '@/composables/useRitual'
+import { submitHate, useRitual } from '@/composables/useRitual'
 
 const ritual = useRitual()
 const input = ref('')
 
-const isOpen = computed(() => ritual.state.value !== 'idle' && ritual.state.value !== 'resolved')
+// Interim: hate prompt only. Full state-machine wiring lands in sub-plan 4 T7.
+const isOpen = computed(() => ritual.state.value === 'askingHate')
 
-function submit(): void {
-  const value = input.value.trim()
-  if (value.length === 0) return
-  if (ritual.state.value === 'askingHate' || ritual.state.value === 'receivingHate') {
-    ritual.submitHate(value)
-  } else {
-    ritual.submitLove(value)
-  }
+function onSubmit(): void {
+  const value = input.value
   input.value = ''
+  if (ritual.state.value === 'askingHate') submitHate(value)
 }
 </script>
 
 <template>
-  <form v-if="isOpen" class="ritual" @submit.prevent="submit">
+  <form v-if="isOpen" class="ritual" @submit.prevent="onSubmit">
     <input
       v-model="input"
       class="ritual-input"
