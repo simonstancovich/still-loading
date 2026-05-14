@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   __resetDirectorStateForTests,
+  __setActForTests,
   createVirtualClock,
   startDirector,
   stopDirector,
@@ -38,6 +39,30 @@ describe('director — stillness wiring', () => {
 
     clock.advance(100)
     expect(director.state.value.stillnessMs).toBe(0)
+
+    stopDirector()
+  })
+})
+
+describe('director — __setActForTests', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('places the director into the given act with sessionMs reset to 0', () => {
+    const clock = createVirtualClock(50_000)
+    const director = useDirector()
+    startDirector(clock)
+    clock.advance(1000)
+
+    __setActForTests('held', clock)
+
+    expect(director.state.value.act).toBe('held')
+    expect(director.state.value.sessionMs).toBe(0)
+
+    clock.advance(500)
+    expect(director.state.value.sessionMs).toBe(500)
 
     stopDirector()
   })
