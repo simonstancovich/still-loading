@@ -132,3 +132,42 @@ describe('director — settle → cathedral OR stillness > 8s', () => {
     stopDirector()
   })
 })
+
+describe('director — cathedral → invite (AND stillness > 4s)', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('does not transition at 390s if cursor is still moving', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('cathedral', clock)
+
+    for (let i = 0; i < 400; i++) {
+      recordMove(clock.now())
+      clock.advance(1000)
+    }
+    expect(director.state.value.act).toBe('cathedral')
+
+    stopDirector()
+  })
+
+  it('transitions when both gates are met: 390s passed AND stillness > 4s', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('cathedral', clock)
+    recordMove(clock.now())
+
+    clock.advance(389_000)
+    expect(director.state.value.act).toBe('cathedral')
+
+    clock.advance(1_000)
+    expect(director.state.value.sessionMs).toBe(390_000)
+    expect(director.state.value.act).toBe('invite')
+
+    stopDirector()
+  })
+})
