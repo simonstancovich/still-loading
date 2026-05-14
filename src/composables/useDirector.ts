@@ -88,6 +88,10 @@ function evaluateTransitions(sessionMs: number, _stillnessMs: number, currentAct
     directorState.value.act = 'settle'
     return
   }
+  if (currentAct === 'settle' && sessionMs >= 180_000) {
+    directorState.value.act = 'cathedral'
+    return
+  }
   if (currentAct === 'held' && sessionMs >= 600_000) {
     directorState.value.act = 'secondCathedral'
     return
