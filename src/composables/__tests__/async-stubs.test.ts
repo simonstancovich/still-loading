@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { useConstellations } from '@/composables/useConstellations'
 import { useGhostPool } from '@/composables/useGhostPool'
-import { useHandwriting } from '@/composables/useHandwriting'
 import { usePresence } from '@/composables/usePresence'
 
 describe('async stubs reject asynchronously, not throw synchronously', () => {
@@ -29,10 +28,6 @@ describe('async stubs reject asynchronously, not throw synchronously', () => {
     await expect(usePresence().leave()).rejects.toThrow(/not implemented/)
   })
 
-  it('useHandwriting.loadAtlas returns a rejected Promise', async () => {
-    await expect(useHandwriting().loadAtlas()).rejects.toThrow(/not implemented/)
-  })
-
   it('useConstellations.fetchPoints returns a rejected Promise', async () => {
     await expect(useConstellations().fetchPoints(60)).rejects.toThrow(/not implemented/)
   })
@@ -40,7 +35,7 @@ describe('async stubs reject asynchronously, not throw synchronously', () => {
   it('calling the stub does NOT throw synchronously', () => {
     // The critical assertion. If this throws, the .catch handler in real code never runs.
     expect(() => useGhostPool().fetchGifts(10).catch(() => undefined)).not.toThrow()
-    expect(() => useHandwriting().loadAtlas().catch(() => undefined)).not.toThrow()
+    expect(() => useConstellations().fetchPoints(60).catch(() => undefined)).not.toThrow()
     expect(() => usePresence().join().catch(() => undefined)).not.toThrow()
   })
 })
