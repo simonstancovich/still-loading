@@ -65,10 +65,14 @@ export function useDust(): DustApi {
 
 function updateDust(sessionMs: number, dtMs: number): void {
   const target = dustCountAt(sessionMs)
-  const next: DustParticle[] = particles.value.map((p) => stepParticle(p, dtMs))
-  while (next.length < target) next.push(spawnParticle())
-  if (next.length > target) next.length = target
-  particles.value = next
+  // Spawn toward the target first, then step every particle — so a
+  // freshly-spawned particle participates in this frame (it fades in and
+  // drifts immediately rather than waiting a tick). This also makes the
+  // dust visible under the debug scrubber's single large time jumps.
+  const current: DustParticle[] = [...particles.value]
+  while (current.length < target) current.push(spawnParticle())
+  if (current.length > target) current.length = target
+  particles.value = current.map((p) => stepParticle(p, dtMs))
 }
 
 let watchStop: (() => void) | null = null
