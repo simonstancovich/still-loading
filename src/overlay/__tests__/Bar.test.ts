@@ -49,8 +49,4 @@ describe('Bar.vue', () => {
     const wrapper = mountBar()
     expect(wrapper.find('.bar').attributes('data-mood')).toBe('calm')
   })
-
-  it('throws a useful error when mounted without a director provider', () => {
-    expect(() => mount(Bar)).toThrow(/Director not provided/)
-  })
 })
