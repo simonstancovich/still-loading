@@ -78,6 +78,42 @@ export function barMoodForAct(act: Act): BarMood {
   return MOOD_BY_ACT[act]
 }
 
+export const AVOIDANCE_RADIUS_PX = 250
+export const AVOIDANCE_MAX_NUDGE = 8
+export const AVOIDANCE_START_MS = 4_000
+export const AVOIDANCE_END_MS = 80_000
+
+export interface Nudge {
+  dx: number
+  dy: number
+}
+
+export function avoidanceNudge(
+  barXPct: number,
+  barYPct: number,
+  cursorXPx: number,
+  cursorYPx: number,
+  viewportW: number,
+  viewportH: number,
+): Nudge {
+  const barCx = (barXPct / 100) * viewportW
+  const barCy = (barYPct / 100) * viewportH
+  const awayX = barCx - cursorXPx
+  const awayY = barCy - cursorYPx
+  const distance = Math.hypot(awayX, awayY)
+  if (distance >= AVOIDANCE_RADIUS_PX) return { dx: 0, dy: 0 }
+  const strength = (AVOIDANCE_RADIUS_PX - distance) / AVOIDANCE_RADIUS_PX
+  if (distance < 1) {
+    return { dx: 0, dy: -AVOIDANCE_MAX_NUDGE * strength }
+  }
+  const dirX = awayX / distance
+  const dirY = awayY / distance
+  return {
+    dx: dirX * strength * AVOIDANCE_MAX_NUDGE,
+    dy: dirY * strength * AVOIDANCE_MAX_NUDGE,
+  }
+}
+
 const barState = ref<BarState>({
   positionX: 50,
   positionY: 50,

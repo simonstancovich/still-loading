@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  AVOIDANCE_MAX_NUDGE,
+  AVOIDANCE_RADIUS_PX,
   FILL_KEYFRAMES,
   POSITION_Y_KEYFRAMES,
+  avoidanceNudge,
   barMoodForAct,
   lerpKeyframes,
 } from '@/composables/useBar'
@@ -69,5 +72,44 @@ describe('useBar — barMoodForAct', () => {
   it('secondCathedral and ending are radiant', () => {
     expect(barMoodForAct('secondCathedral')).toBe('radiant')
     expect(barMoodForAct('ending')).toBe('radiant')
+  })
+})
+
+describe('useBar — avoidanceNudge', () => {
+  const VW = 1000
+  const VH = 1000
+
+  it('is zero when the cursor is beyond the avoidance radius', () => {
+    const nudge = avoidanceNudge(50, 50, 50, 50, VW, VH)
+    expect(nudge.dx).toBe(0)
+    expect(nudge.dy).toBe(0)
+  })
+
+  it('pushes away from a cursor that is to the left of the bar', () => {
+    const nudge = avoidanceNudge(50, 50, 450, 500, VW, VH)
+    expect(nudge.dx).toBeGreaterThan(0)
+    expect(Math.abs(nudge.dy)).toBeLessThan(0.0001)
+  })
+
+  it('pushes away from a cursor that is below the bar', () => {
+    const nudge = avoidanceNudge(50, 50, 500, 450, VW, VH)
+    expect(nudge.dy).toBeGreaterThan(0)
+    expect(Math.abs(nudge.dx)).toBeLessThan(0.0001)
+  })
+
+  it('pushes harder when the cursor is closer', () => {
+    const near = avoidanceNudge(50, 50, 490, 500, VW, VH)
+    const far = avoidanceNudge(50, 50, 350, 500, VW, VH)
+    expect(near.dx).toBeGreaterThan(far.dx)
+  })
+
+  it('never exceeds AVOIDANCE_MAX_NUDGE on either axis', () => {
+    const nudge = avoidanceNudge(50, 50, 500, 500, VW, VH)
+    expect(Math.abs(nudge.dx)).toBeLessThanOrEqual(AVOIDANCE_MAX_NUDGE)
+    expect(Math.abs(nudge.dy)).toBeLessThanOrEqual(AVOIDANCE_MAX_NUDGE)
+  })
+
+  it('AVOIDANCE_RADIUS_PX is 250', () => {
+    expect(AVOIDANCE_RADIUS_PX).toBe(250)
   })
 })
