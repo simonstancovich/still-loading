@@ -67,3 +67,30 @@ describe('director — __setActForTests', () => {
     stopDirector()
   })
 })
+
+describe('director — settle → cathedral', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('transitions at 180s when the cursor keeps moving (stillness never builds)', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('settle', clock)
+
+    for (let elapsed = 0; elapsed < 179_000; elapsed += 1000) {
+      recordMove(clock.now())
+      clock.advance(1000)
+    }
+    expect(director.state.value.act).toBe('settle')
+
+    recordMove(clock.now())
+    clock.advance(1000)
+    expect(director.state.value.sessionMs).toBe(180_000)
+    expect(director.state.value.act).toBe('cathedral')
+
+    stopDirector()
+  })
+})
