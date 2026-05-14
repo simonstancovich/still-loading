@@ -3,8 +3,18 @@ import {
   __resetVoiceForTests,
   eligibleLines,
   scheduleLineForAct,
+  startVoice,
+  stopVoice,
   useVoice,
 } from '@/composables/useVoice'
+import {
+  __resetDirectorStateForTests,
+  createVirtualClock,
+  startDirector,
+  stopDirector,
+  useDirector,
+} from '@/composables/useDirector'
+import { __resetStillnessForTests, recordMove } from '@/composables/useStillness'
 
 describe('useVoice — eligibleLines', () => {
   it('returns lines matching the act and mood', () => {
@@ -82,5 +92,83 @@ describe('useVoice — scheduleLineForAct', () => {
   it('the first call always passes the gap check regardless of sessionMs', () => {
     scheduleLineForAct('flirt', 'playful', 1)
     expect(useVoice().currentLine.value).not.toBeNull()
+  })
+})
+
+describe('useVoice — startVoice watch wiring', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+    __resetVoiceForTests()
+  })
+
+  it('writes a flirt line when the director enters flirt', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startVoice()
+
+    expect(useVoice().currentLine.value).toBeNull()
+
+    clock.advance(800)
+    expect(useDirector().state.value.act).toBe('flirt')
+    expect(useVoice().currentLine.value?.act).toContain('flirt')
+
+    stopVoice()
+    stopDirector()
+  })
+
+  it('writes a new line on each act change, never repeating', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    startVoice()
+
+    recordMove(clock.now())
+    clock.advance(800) // sessionMs 800 → flirt
+    const flirtText = useVoice().currentLine.value?.text
+
+    recordMove(clock.now())
+    clock.advance(89_200) // sessionMs 90_000 → settle
+    const settleText = useVoice().currentLine.value?.text
+
+    for (let t = 90_000; t < 180_000; t += 1000) {
+      recordMove(clock.now())
+      clock.advance(1000)
+    }
+    const cathedralText = useVoice().currentLine.value?.text
+
+    expect(director.state.value.act).toBe('cathedral')
+    expect(new Set([flirtText, settleText, cathedralText]).size).toBe(3)
+
+    stopVoice()
+    stopDirector()
+  })
+
+  it('stopVoice halts scheduling — later act changes do not write lines', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startVoice()
+    stopVoice()
+
+    clock.advance(800)
+    expect(useVoice().currentLine.value).toBeNull()
+
+    stopDirector()
+  })
+
+  it('startVoice is idempotent — calling twice does not double-schedule', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startVoice()
+    startVoice()
+
+    clock.advance(800)
+    expect(useVoice().history.value).toHaveLength(1)
+
+    stopVoice()
+    stopDirector()
   })
 })

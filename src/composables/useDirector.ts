@@ -93,8 +93,10 @@ const MOOD_BY_ACT: Readonly<Record<Act, Mood>> = {
 }
 
 function enterAct(act: Act): void {
-  directorState.value.act = act
+  // Set mood before act: consumers may watch `act` with flush: 'sync' and
+  // would otherwise observe a stale mood between these two assignments.
   directorState.value.mood = MOOD_BY_ACT[act]
+  directorState.value.act = act
 }
 
 function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
