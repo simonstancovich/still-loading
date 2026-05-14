@@ -1,5 +1,5 @@
 import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
-import type { Act, DirectorState } from '@/lib/director-types'
+import type { Act, DirectorState, Mood } from '@/lib/director-types'
 import { lastMoveAt } from '@/composables/useStillness'
 
 export interface Clock {
@@ -79,33 +79,51 @@ let startedAt = 0
 let totalPausedMs = 0
 let lastTickAt = 0
 
+const MOOD_BY_ACT: Readonly<Record<Act, Mood>> = {
+  preflight: 'playful',
+  flirt: 'playful',
+  settle: 'honest',
+  cathedral: 'reverent',
+  invite: 'tender',
+  ritual: 'tender',
+  held: 'held',
+  secondCathedral: 'reverent',
+  ending: 'reverent',
+  longTail: 'reverent',
+}
+
+function enterAct(act: Act): void {
+  directorState.value.act = act
+  directorState.value.mood = MOOD_BY_ACT[act]
+}
+
 function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= 800) {
-    directorState.value.act = 'flirt'
+    enterAct('flirt')
     return
   }
   if (currentAct === 'flirt' && sessionMs >= 90_000) {
-    directorState.value.act = 'settle'
+    enterAct('settle')
     return
   }
   if (currentAct === 'settle' && (sessionMs >= 180_000 || stillnessMs >= 8_000)) {
-    directorState.value.act = 'cathedral'
+    enterAct('cathedral')
     return
   }
   if (currentAct === 'cathedral' && sessionMs >= 390_000 && stillnessMs >= 4_000) {
-    directorState.value.act = 'invite'
+    enterAct('invite')
     return
   }
   if (currentAct === 'held' && sessionMs >= 600_000) {
-    directorState.value.act = 'secondCathedral'
+    enterAct('secondCathedral')
     return
   }
   if (currentAct === 'secondCathedral' && sessionMs >= 690_000) {
-    directorState.value.act = 'ending'
+    enterAct('ending')
     return
   }
   if (currentAct === 'ending' && sessionMs >= 720_000) {
-    directorState.value.act = 'longTail'
+    enterAct('longTail')
     return
   }
 }
@@ -185,7 +203,7 @@ export function __resetDirectorStateForTests(): void {
 }
 
 export function __setActForTests(act: Act, clock: Clock): void {
-  directorState.value.act = act
+  enterAct(act)
   directorState.value.sessionMs = 0
   startedAt = clock.now()
   totalPausedMs = 0

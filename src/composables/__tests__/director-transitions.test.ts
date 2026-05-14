@@ -279,3 +279,44 @@ describe('director — full passive run from preflight to invite', () => {
     stopDirector()
   })
 })
+
+describe('director — mood tracks act', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('mood is playful in preflight and flirt', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    expect(director.state.value.mood).toBe('playful')
+
+    clock.advance(800)
+    expect(director.state.value.act).toBe('flirt')
+    expect(director.state.value.mood).toBe('playful')
+
+    stopDirector()
+  })
+
+  it('mood becomes honest when act becomes settle', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    clock.advance(90_000)
+    expect(director.state.value.act).toBe('settle')
+    expect(director.state.value.mood).toBe('honest')
+    stopDirector()
+  })
+
+  it('__setActForTests also updates mood', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    __setActForTests('held', clock)
+    expect(director.state.value.mood).toBe('held')
+    __setActForTests('cathedral', clock)
+    expect(director.state.value.mood).toBe('reverent')
+    stopDirector()
+  })
+})
