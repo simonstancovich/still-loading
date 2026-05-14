@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { DIRECTOR_KEY, realClock, startDirector, useDirector } from '@/composables/useDirector'
 import { startStillnessTracking } from '@/composables/useStillness'
+import { startVoice } from '@/composables/useVoice'
 import { wireVisibilityToDirector } from '@/main-wiring'
 import { applyTokensAsCssVariables } from '@/styles/apply'
 
@@ -16,4 +17,5 @@ app.provide(DIRECTOR_KEY, director)
 app.mount('#app')
 startDirector(realClock)
 startStillnessTracking(realClock)
+startVoice()
 wireVisibilityToDirector(director)
