@@ -249,3 +249,33 @@ describe('director — ending → longTail (720s AND not paused)', () => {
     stopDirector()
   })
 })
+
+describe('director — full passive run from preflight to invite', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+  })
+
+  it('a viewer who never moves reaches invite by 390s', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    recordMove(0)
+    startDirector(clock)
+
+    expect(director.state.value.act).toBe('preflight')
+
+    clock.advance(800)
+    expect(director.state.value.act).toBe('flirt')
+
+    clock.advance(90_000 - 800)
+    expect(director.state.value.act).toBe('settle')
+
+    clock.advance(1)
+    expect(director.state.value.act).toBe('cathedral')
+
+    clock.advance(390_000 - 90_001)
+    expect(director.state.value.act).toBe('invite')
+
+    stopDirector()
+  })
+})
