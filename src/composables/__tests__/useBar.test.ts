@@ -6,6 +6,7 @@ import {
   POSITION_Y_KEYFRAMES,
   avoidanceNudge,
   barMoodForAct,
+  computeBarTarget,
   lerpKeyframes,
 } from '@/composables/useBar'
 
@@ -111,5 +112,51 @@ describe('useBar — avoidanceNudge', () => {
 
   it('AVOIDANCE_RADIUS_PX is 250', () => {
     expect(AVOIDANCE_RADIUS_PX).toBe(250)
+  })
+})
+
+describe('useBar — computeBarTarget', () => {
+  const VW = 1000
+  const VH = 1000
+  const FAR_X = 0
+  const FAR_Y = 0
+
+  it('fill follows the keyframe timeline regardless of act', () => {
+    expect(computeBarTarget('flirt', 7_000, FAR_X, FAR_Y, VW, VH).fill).toBe(8)
+    expect(computeBarTarget('settle', 162_000, FAR_X, FAR_Y, VW, VH).fill).toBe(24)
+  })
+
+  it('mood follows the act', () => {
+    expect(computeBarTarget('flirt', 5_000, FAR_X, FAR_Y, VW, VH).mood).toBe('misbehaving')
+    expect(computeBarTarget('cathedral', 200_000, FAR_X, FAR_Y, VW, VH).mood).toBe('calm')
+  })
+
+  it('x is 50 and y is 50 before the cathedral migration', () => {
+    const target = computeBarTarget('settle', 100_000, FAR_X, FAR_Y, VW, VH)
+    expect(target.x).toBe(50)
+    expect(target.y).toBe(50)
+  })
+
+  it('y migrates toward the upper third during cathedral', () => {
+    expect(computeBarTarget('cathedral', 220_000, FAR_X, FAR_Y, VW, VH).y).toBe(50)
+    expect(computeBarTarget('cathedral', 260_000, FAR_X, FAR_Y, VW, VH).y).toBe(33)
+  })
+
+  it('applies cursor avoidance only during the flirt avoidance window', () => {
+    const duringFlirt = computeBarTarget('flirt', 10_000, 500, 500, VW, VH)
+    expect(duringFlirt.x !== 50 || duringFlirt.y !== 50).toBe(true)
+
+    const duringSettle = computeBarTarget('settle', 100_000, 500, 500, VW, VH)
+    expect(duringSettle.x).toBe(50)
+    expect(duringSettle.y).toBe(50)
+  })
+
+  it('does not apply avoidance before AVOIDANCE_START_MS or after AVOIDANCE_END_MS', () => {
+    const tooEarly = computeBarTarget('flirt', 2_000, 500, 500, VW, VH)
+    expect(tooEarly.x).toBe(50)
+    expect(tooEarly.y).toBe(50)
+
+    const tooLate = computeBarTarget('flirt', 85_000, 500, 500, VW, VH)
+    expect(tooLate.x).toBe(50)
   })
 })
