@@ -3,6 +3,8 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { OrthographicCamera, Scene as ThreeScene, WebGLRenderer } from 'three'
 import { rawShallowNullable, assignRaw } from '@/scene/raw'
 import { VoidLayer } from '@/scene/layers/VoidLayer'
+import { DustLayer } from '@/scene/layers/DustLayer'
+import { DUST_MAX, useDust } from '@/composables/useDust'
 
 const canvasEl = ref<HTMLCanvasElement | null>(null)
 
@@ -10,6 +12,9 @@ const renderer = rawShallowNullable<WebGLRenderer>()
 const scene = rawShallowNullable<ThreeScene>()
 const camera = rawShallowNullable<OrthographicCamera>()
 const voidLayer = rawShallowNullable<VoidLayer>()
+const dustLayer = rawShallowNullable<DustLayer>()
+
+const dust = useDust()
 
 let rafId = 0
 let lastFrameAt = 0
@@ -26,6 +31,7 @@ function tick(now: number): void {
   lastFrameAt = now
   if (!renderer.value || !scene.value || !camera.value) return
   voidLayer.value?.update(dt)
+  dustLayer.value?.sync(dust.particles.value)
   renderer.value.render(scene.value, camera.value)
 }
 
@@ -46,6 +52,8 @@ onMounted(() => {
   assignRaw(camera, new OrthographicCamera(-1, 1, 1, -1, 0, 1))
   assignRaw(voidLayer, new VoidLayer())
   if (voidLayer.value && scene.value) scene.value.add(voidLayer.value.mesh)
+  assignRaw(dustLayer, new DustLayer(DUST_MAX))
+  if (dustLayer.value && scene.value) scene.value.add(dustLayer.value.points)
   resize()
   window.addEventListener('resize', resize)
   rafId = requestAnimationFrame(tick)
@@ -55,6 +63,7 @@ onBeforeUnmount(() => {
   cancelAnimationFrame(rafId)
   window.removeEventListener('resize', resize)
   if (voidLayer.value && renderer.value) voidLayer.value.dispose(renderer.value)
+  if (dustLayer.value && renderer.value) dustLayer.value.dispose(renderer.value)
   renderer.value?.dispose()
 })
 </script>
