@@ -6,6 +6,9 @@ import Ritual from '@/overlay/Ritual.vue'
 import IntimateCorner from '@/overlay/IntimateCorner.vue'
 import PresenceCorner from '@/overlay/PresenceCorner.vue'
 import Rupture from '@/overlay/Rupture.vue'
+import DebugScrubber from '@/overlay/DebugScrubber.vue'
+
+const isDebug = import.meta.env.DEV
 </script>
 
 <template>
@@ -16,4 +19,5 @@ import Rupture from '@/overlay/Rupture.vue'
   <IntimateCorner />
   <PresenceCorner />
   <Rupture />
+  <DebugScrubber v-if="isDebug" />
 </template>
