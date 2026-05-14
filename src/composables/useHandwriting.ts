@@ -13,7 +13,7 @@ function clamp01(value: number): number {
 }
 
 export function charStates(text: string, elapsedMs: number): CharState[] {
-  return [...text].map((char, index) => {
+  return Array.from(text, (char, index) => {
     const revealAt = index * MS_PER_GLYPH
     const opacity = clamp01((elapsedMs - revealAt) / FADE_MS)
     return { char, opacity }
