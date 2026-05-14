@@ -1,7 +1,8 @@
-import { ref, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 import type { RitualState } from '@/lib/director-types'
 import { checkSafety } from '@/corpus/safety'
 import { seedGifts } from '@/corpus/seedGifts'
+import { useDirector } from '@/composables/useDirector'
 
 export const HATE_ECHO_COUNT = 14
 
@@ -76,7 +77,27 @@ export function submitLove(text: string): void {
   state.value = 'resolved'
 }
 
+let watchStop: (() => void) | null = null
+
+export function startRitual(): void {
+  if (watchStop) return
+  const director = useDirector()
+  watchStop = watch(
+    () => director.state.value.act,
+    (act) => {
+      if (act === 'invite') beginRitual()
+    },
+    { flush: 'sync' },
+  )
+}
+
+export function stopRitual(): void {
+  watchStop?.()
+  watchStop = null
+}
+
 export function __resetRitualForTests(): void {
+  stopRitual()
   state.value = 'idle'
   hateEchoes.value = []
   loveResolution.value = null
