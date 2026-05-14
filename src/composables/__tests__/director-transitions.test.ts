@@ -8,6 +8,12 @@ import {
   useDirector,
 } from '@/composables/useDirector'
 import { __resetStillnessForTests, recordMove } from '@/composables/useStillness'
+import {
+  __resetRitualForTests,
+  startRitual,
+  stopRitual,
+  useRitual,
+} from '@/composables/useRitual'
 
 describe('director — stillness wiring', () => {
   beforeEach(() => {
@@ -318,6 +324,48 @@ describe('director — mood tracks act', () => {
     expect(director.state.value.mood).toBe('held')
     __setActForTests('cathedral', clock)
     expect(director.state.value.mood).toBe('reverent')
+    stopDirector()
+  })
+})
+
+describe('director — ritual-gated transitions', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+    __resetStillnessForTests()
+    __resetRitualForTests()
+  })
+
+  it('invite → ritual fires once the ritual leaves idle', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    startRitual()
+    __setActForTests('invite', clock)
+    clock.advance(1)
+
+    director.submitHate('my impatience')
+    clock.advance(1)
+    expect(director.state.value.act).toBe('ritual')
+
+    stopRitual()
+    stopDirector()
+  })
+
+  it('ritual → held fires once the ritual resolves', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    startDirector(clock)
+    startRitual()
+    __setActForTests('invite', clock)
+    clock.advance(1)
+
+    director.submitHate('my impatience')
+    director.submitLove('my laugh')
+    expect(useRitual().state.value).toBe('resolved')
+    clock.advance(1)
+    expect(director.state.value.act).toBe('held')
+
+    stopRitual()
     stopDirector()
   })
 })
