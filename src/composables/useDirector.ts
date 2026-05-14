@@ -1,5 +1,6 @@
 import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
 import type { Act, DirectorState } from '@/lib/director-types'
+import { lastMoveAt } from '@/composables/useStillness'
 
 export interface Clock {
   now(): number
@@ -78,7 +79,7 @@ let startedAt = 0
 let totalPausedMs = 0
 let lastTickAt = 0
 
-function evaluateTransitions(sessionMs: number, currentAct: Act): void {
+function evaluateTransitions(sessionMs: number, _stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= 800) {
     directorState.value.act = 'flirt'
     return
@@ -105,8 +106,10 @@ function applyTime(now: number): void {
   }
   lastTickAt = now
   const sessionMs = now - startedAt - totalPausedMs
+  const stillnessMs = Math.max(0, now - lastMoveAt.value)
   directorState.value.sessionMs = sessionMs
-  evaluateTransitions(sessionMs, directorState.value.act)
+  directorState.value.stillnessMs = stillnessMs
+  evaluateTransitions(sessionMs, stillnessMs, directorState.value.act)
 }
 
 function buildApi(): DirectorApi {
