@@ -2,7 +2,11 @@ import { ref, watch, type Ref } from 'vue'
 import type { RitualState } from '@/lib/director-types'
 import { checkSafety } from '@/corpus/safety'
 import { seedGifts } from '@/corpus/seedGifts'
-import { useDirector } from '@/composables/useDirector'
+import {
+  __registerRitualHooks,
+  __registerRitualStateGetter,
+  useDirector,
+} from '@/composables/useDirector'
 
 export const HATE_ECHO_COUNT = 14
 
@@ -103,3 +107,6 @@ export function __resetRitualForTests(): void {
   loveResolution.value = null
   safetyTier.value = null
 }
+
+__registerRitualHooks({ submitHate, submitLove })
+__registerRitualStateGetter(() => state.value)

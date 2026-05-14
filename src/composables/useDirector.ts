@@ -1,5 +1,5 @@
 import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
-import type { Act, DirectorState, Mood } from '@/lib/director-types'
+import type { Act, DirectorState, Mood, RitualState } from '@/lib/director-types'
 import { lastMoveAt } from '@/composables/useStillness'
 
 export interface Clock {
@@ -99,6 +99,24 @@ function enterAct(act: Act): void {
   directorState.value.act = act
 }
 
+// Ritual hooks are registered by useRitual at module load. The director
+// never imports useRitual directly — that would form an import cycle, since
+// useRitual imports useDirector.
+interface RitualHooks {
+  submitHate: (text: string) => void
+  submitLove: (text: string) => void
+}
+let ritualHooks: RitualHooks | null = null
+let ritualStateGetter: (() => RitualState) | null = null
+
+export function __registerRitualHooks(hooks: RitualHooks): void {
+  ritualHooks = hooks
+}
+
+export function __registerRitualStateGetter(getter: () => RitualState): void {
+  ritualStateGetter = getter
+}
+
 function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= 800) {
     enterAct('flirt')
@@ -114,6 +132,14 @@ function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct:
   }
   if (currentAct === 'cathedral' && sessionMs >= 390_000 && stillnessMs >= 4_000) {
     enterAct('invite')
+    return
+  }
+  if (currentAct === 'invite' && ritualStateGetter && ritualStateGetter() !== 'idle') {
+    enterAct('ritual')
+    return
+  }
+  if (currentAct === 'ritual' && ritualStateGetter && ritualStateGetter() === 'resolved') {
+    enterAct('held')
     return
   }
   if (currentAct === 'held' && sessionMs >= 600_000) {
@@ -147,11 +173,11 @@ function applyTime(now: number): void {
 function buildApi(): DirectorApi {
   return {
     state: readonly(directorState),
-    submitHate: () => {
-      throw new Error('useDirector.submitHate: not implemented')
+    submitHate: (text: string) => {
+      ritualHooks?.submitHate(text)
     },
-    submitLove: () => {
-      throw new Error('useDirector.submitLove: not implemented')
+    submitLove: (text: string) => {
+      ritualHooks?.submitLove(text)
     },
     flagSafetyConcern: () => {
       throw new Error('useDirector.flagSafetyConcern: not implemented')
