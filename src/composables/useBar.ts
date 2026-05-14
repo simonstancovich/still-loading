@@ -114,6 +114,37 @@ export function avoidanceNudge(
   }
 }
 
+export interface BarTarget {
+  x: number
+  y: number
+  fill: number
+  mood: BarMood
+}
+
+export function computeBarTarget(
+  act: Act,
+  sessionMs: number,
+  cursorXPx: number,
+  cursorYPx: number,
+  viewportW: number,
+  viewportH: number,
+): BarTarget {
+  const fill = lerpKeyframes(FILL_KEYFRAMES, sessionMs)
+  const mood = barMoodForAct(act)
+  const restX = 50
+  const restY = lerpKeyframes(POSITION_Y_KEYFRAMES, sessionMs)
+  let x = restX
+  let y = restY
+  const avoidanceActive =
+    act === 'flirt' && sessionMs >= AVOIDANCE_START_MS && sessionMs <= AVOIDANCE_END_MS
+  if (avoidanceActive) {
+    const nudge = avoidanceNudge(restX, restY, cursorXPx, cursorYPx, viewportW, viewportH)
+    x += nudge.dx
+    y += nudge.dy
+  }
+  return { x, y, fill, mood }
+}
+
 const barState = ref<BarState>({
   positionX: 50,
   positionY: 50,
