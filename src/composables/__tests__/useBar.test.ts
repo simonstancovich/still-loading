@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { FILL_KEYFRAMES, POSITION_Y_KEYFRAMES, lerpKeyframes } from '@/composables/useBar'
+import {
+  FILL_KEYFRAMES,
+  POSITION_Y_KEYFRAMES,
+  barMoodForAct,
+  lerpKeyframes,
+} from '@/composables/useBar'
 
 describe('useBar — lerpKeyframes', () => {
   const kf: readonly (readonly [number, number])[] = [
@@ -43,5 +48,26 @@ describe('useBar — lerpKeyframes', () => {
     expect(lerpKeyframes(POSITION_Y_KEYFRAMES, 220_000)).toBe(50)
     expect(lerpKeyframes(POSITION_Y_KEYFRAMES, 260_000)).toBe(33)
     expect(lerpKeyframes(POSITION_Y_KEYFRAMES, 240_000)).toBe(41.5)
+  })
+})
+
+describe('useBar — barMoodForAct', () => {
+  it('flirt is misbehaving', () => {
+    expect(barMoodForAct('flirt')).toBe('misbehaving')
+  })
+
+  it('preflight, settle, cathedral, invite, ritual, longTail are calm', () => {
+    for (const act of ['preflight', 'settle', 'cathedral', 'invite', 'ritual', 'longTail'] as const) {
+      expect(barMoodForAct(act)).toBe('calm')
+    }
+  })
+
+  it('held is held', () => {
+    expect(barMoodForAct('held')).toBe('held')
+  })
+
+  it('secondCathedral and ending are radiant', () => {
+    expect(barMoodForAct('secondCathedral')).toBe('radiant')
+    expect(barMoodForAct('ending')).toBe('radiant')
   })
 })
