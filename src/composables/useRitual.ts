@@ -1,5 +1,6 @@
 import { ref, type Ref } from 'vue'
 import type { RitualState } from '@/lib/director-types'
+import { checkSafety } from '@/corpus/safety'
 
 export const HATE_ECHO_COUNT = 14
 
@@ -33,8 +34,15 @@ export function submitHate(text: string): void {
   if (state.value !== 'askingHate') return
   const trimmed = text.trim()
   if (trimmed.length === 0) return
+  const hit = checkSafety(trimmed)
+  if (hit) safetyTier.value = hit.tier
   state.value = 'multiplyingHate'
-  hateEchoes.value = Array.from({ length: HATE_ECHO_COUNT }, () => trimmed)
+  if (hit?.tier === 1) {
+    // Do not amplify distress visually — skip the echo multiplication.
+    hateEchoes.value = []
+  } else {
+    hateEchoes.value = Array.from({ length: HATE_ECHO_COUNT }, () => trimmed)
+  }
   state.value = 'askingLove'
 }
 
