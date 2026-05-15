@@ -142,6 +142,30 @@ export function useBar(): BarApi {
 
 export const SMOOTHING = 0.15
 
+// Sprint pulse: a warm bloom radiating from the bar across the flirt-act
+// sprint moment (fill 22 → 96 → 11 between ~27 000 and 30 000 ms). Pure —
+// renderers compute their scale/opacity from this.
+export const PULSE_START_MS = 27_000
+export const PULSE_PEAK_MS = 27_700
+export const PULSE_END_MS = 28_500
+
+export interface PulseEnvelope {
+  scale: number
+  alpha: number
+}
+
+export function pulseAt(sessionMs: number): PulseEnvelope {
+  if (sessionMs < PULSE_START_MS || sessionMs > PULSE_END_MS) {
+    return { scale: 1, alpha: 0 }
+  }
+  if (sessionMs <= PULSE_PEAK_MS) {
+    const r = (sessionMs - PULSE_START_MS) / (PULSE_PEAK_MS - PULSE_START_MS)
+    return { scale: 1 + r * 3, alpha: r * 0.8 }
+  }
+  const r = (sessionMs - PULSE_PEAK_MS) / (PULSE_END_MS - PULSE_PEAK_MS)
+  return { scale: 4 - r, alpha: 0.8 * (1 - r) }
+}
+
 function updateBar(act: Act, sessionMs: number): void {
   const viewportW = typeof window === 'undefined' ? 1 : window.innerWidth
   const viewportH = typeof window === 'undefined' ? 1 : window.innerHeight

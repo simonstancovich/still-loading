@@ -4,12 +4,16 @@ import {
   AVOIDANCE_RADIUS_PX,
   FILL_KEYFRAMES,
   POSITION_Y_KEYFRAMES,
+  PULSE_END_MS,
+  PULSE_PEAK_MS,
+  PULSE_START_MS,
   SMOOTHING,
   __resetBarForTests,
   avoidanceNudge,
   barMoodForAct,
   computeBarTarget,
   lerpKeyframes,
+  pulseAt,
   startBar,
   stopBar,
   useBar,
@@ -243,5 +247,42 @@ describe('useBar — startBar / updateBar', () => {
 
     stopBar()
     stopDirector()
+  })
+})
+
+describe('useBar — pulseAt', () => {
+  it('is silent outside the sprint window', () => {
+    expect(pulseAt(PULSE_START_MS - 1)).toEqual({ scale: 1, alpha: 0 })
+    expect(pulseAt(PULSE_END_MS + 1)).toEqual({ scale: 1, alpha: 0 })
+    expect(pulseAt(0)).toEqual({ scale: 1, alpha: 0 })
+  })
+
+  it('peaks at PULSE_PEAK_MS', () => {
+    const peak = pulseAt(PULSE_PEAK_MS)
+    expect(peak.scale).toBeCloseTo(4, 5)
+    expect(peak.alpha).toBeCloseTo(0.8, 5)
+  })
+
+  it('alpha is in 0..1 across the window', () => {
+    for (let t = PULSE_START_MS; t <= PULSE_END_MS; t += 100) {
+      const p = pulseAt(t)
+      expect(p.alpha).toBeGreaterThanOrEqual(0)
+      expect(p.alpha).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('scale grows monotonically up to the peak, falls back down after', () => {
+    let prev = pulseAt(PULSE_START_MS).scale
+    for (let t = PULSE_START_MS + 50; t <= PULSE_PEAK_MS; t += 50) {
+      const s = pulseAt(t).scale
+      expect(s).toBeGreaterThanOrEqual(prev)
+      prev = s
+    }
+    prev = pulseAt(PULSE_PEAK_MS).scale
+    for (let t = PULSE_PEAK_MS + 50; t <= PULSE_END_MS; t += 50) {
+      const s = pulseAt(t).scale
+      expect(s).toBeLessThanOrEqual(prev)
+      prev = s
+    }
   })
 })
