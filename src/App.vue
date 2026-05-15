@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Scene from '@/scene/Scene.vue'
+import PaintingCanvas from '@/overlay/PaintingCanvas.vue'
 import Bar from '@/overlay/Bar.vue'
 import Voice from '@/overlay/Voice.vue'
 import Ritual from '@/overlay/Ritual.vue'
@@ -14,6 +15,7 @@ const isDebug = import.meta.env.DEV
 
 <template>
   <Scene />
+  <PaintingCanvas />
   <Bar />
   <Voice />
   <Ritual />
