@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
+  PREFLIGHT_MS,
   __resetDirectorStateForTests,
   createVirtualClock,
   startDirector,
@@ -21,18 +22,18 @@ describe('useDirector — virtual clock + transitions', () => {
     stopDirector()
   })
 
-  it('preflight → flirt fires at exactly 800ms (boundary)', () => {
+  it('preflight → flirt fires at exactly PREFLIGHT_MS (boundary)', () => {
     const clock = createVirtualClock(0)
     const director = useDirector()
     startDirector(clock)
 
-    clock.advance(799)
+    clock.advance(PREFLIGHT_MS - 1)
     expect(director.state.value.act).toBe('preflight')
-    expect(director.state.value.sessionMs).toBe(799)
+    expect(director.state.value.sessionMs).toBe(PREFLIGHT_MS - 1)
 
     clock.advance(1)
     expect(director.state.value.act).toBe('flirt')
-    expect(director.state.value.sessionMs).toBe(800)
+    expect(director.state.value.sessionMs).toBe(PREFLIGHT_MS)
 
     stopDirector()
   })
@@ -42,12 +43,12 @@ describe('useDirector — virtual clock + transitions', () => {
     const director = useDirector()
     startDirector(clock)
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
 
-    clock.advance(89_000)
+    clock.advance(90_000 - PREFLIGHT_MS - 200)
     expect(director.state.value.act).toBe('flirt')
-    expect(director.state.value.sessionMs).toBe(89_800)
+    expect(director.state.value.sessionMs).toBe(90_000 - 200)
 
     clock.advance(200)
     expect(director.state.value.act).toBe('settle')
@@ -61,9 +62,9 @@ describe('useDirector — virtual clock + transitions', () => {
     const director = useDirector()
     startDirector(clock)
     expect(director.state.value.sessionMs).toBe(0)
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
-    expect(director.state.value.sessionMs).toBe(800)
+    expect(director.state.value.sessionMs).toBe(PREFLIGHT_MS)
     stopDirector()
   })
 
@@ -81,9 +82,9 @@ describe('useDirector — virtual clock + transitions', () => {
     expect(director.state.value.sessionMs).toBe(500)
 
     director.resume()
-    clock.advance(300)
+    clock.advance(PREFLIGHT_MS - 500)
     expect(director.state.value.paused).toBe(false)
-    expect(director.state.value.sessionMs).toBe(800)
+    expect(director.state.value.sessionMs).toBe(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
 
     stopDirector()
@@ -103,12 +104,12 @@ describe('useDirector — virtual clock + transitions', () => {
     expect(director.state.value.act).toBe('preflight')
   })
 
-  it('does not transition twice — once in flirt, stays in flirt even if advanced past 800ms again', () => {
+  it('does not transition twice — once in flirt, stays in flirt even if advanced past PREFLIGHT_MS again', () => {
     const clock = createVirtualClock(0)
     const director = useDirector()
     startDirector(clock)
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
 
     clock.advance(1)

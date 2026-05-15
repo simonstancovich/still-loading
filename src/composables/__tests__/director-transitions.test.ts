@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
+  PREFLIGHT_MS,
   __resetDirectorStateForTests,
   __setActForTests,
   createVirtualClock,
@@ -270,10 +271,10 @@ describe('director — full passive run from preflight to invite', () => {
 
     expect(director.state.value.act).toBe('preflight')
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
 
-    clock.advance(90_000 - 800)
+    clock.advance(90_000 - PREFLIGHT_MS)
     expect(director.state.value.act).toBe('settle')
 
     clock.advance(1)
@@ -298,7 +299,7 @@ describe('director — mood tracks act', () => {
     startDirector(clock)
     expect(director.state.value.mood).toBe('playful')
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
     expect(director.state.value.mood).toBe('playful')
 
@@ -309,8 +310,8 @@ describe('director — mood tracks act', () => {
     const clock = createVirtualClock(0)
     const director = useDirector()
     startDirector(clock)
-    clock.advance(800) // → flirt
-    clock.advance(89_200) // → settle
+    clock.advance(PREFLIGHT_MS) // → flirt
+    clock.advance(90_000 - PREFLIGHT_MS) // → settle
     expect(director.state.value.act).toBe('settle')
     expect(director.state.value.mood).toBe('honest')
     stopDirector()
