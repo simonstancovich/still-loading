@@ -142,6 +142,12 @@ export function useBar(): BarApi {
 
 export const SMOOTHING = 0.15
 
+// The bar's staged entrance during preflight: invisible from sec 0, fades
+// in starting at BAR_ENTRANCE_MS. Earlier than flirt entry (see
+// PREFLIGHT_MS in useDirector) so there's a beat with bar-but-no-voice
+// before the greeting arrives.
+export const BAR_ENTRANCE_MS = 1_500
+
 // Sprint pulse: a warm bloom radiating from the bar across the flirt-act
 // sprint moment (fill 22 → 96 → 11 between ~27 000 and 30 000 ms). Pure —
 // renderers compute their scale/opacity from this.

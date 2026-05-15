@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
+  PREFLIGHT_MS,
   __resetDirectorStateForTests,
   createVirtualClock,
   startDirector,
@@ -24,12 +25,12 @@ describe('voice integration — director drives a revealing line', () => {
     startDirector(clock)
     startVoice()
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     const voice = useVoice()
     const line = voice.currentLine.value
     expect(line).not.toBeNull()
     expect(line?.act).toContain('flirt')
-    expect(voice.currentLineStartedMs.value).toBe(800)
+    expect(voice.currentLineStartedMs.value).toBe(PREFLIGHT_MS)
 
     const elapsed0 = director.state.value.sessionMs - voice.currentLineStartedMs.value
     expect(elapsed0).toBe(0)

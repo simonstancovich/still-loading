@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { pulseAt, useBar } from '@/composables/useBar'
+import { BAR_ENTRANCE_MS, pulseAt, useBar } from '@/composables/useBar'
 import { injectDirector } from '@/composables/useDirector'
 import { cursorX, cursorY } from '@/composables/useStillness'
 
@@ -58,10 +58,11 @@ const pulseStyle = computed(() => ({
   opacity: String(pulse.value.alpha),
 }))
 
-// Staged entry: the bar is invisible during preflight and fades in once
-// the director enters flirt. Matches the phase-1 design — sec 0 belongs
-// to the cursor + painting hook; the bar arrives at sec 0.8.
-const isVisible = computed(() => director.state.value.act !== 'preflight')
+// Staged entry: the bar is invisible until BAR_ENTRANCE_MS so the page
+// begins as cursor + painting alone. The bar arrives before the voice
+// (which fires at PREFLIGHT_MS when flirt begins) — giving the user a
+// beat of bar-with-no-voice before being addressed.
+const isVisible = computed(() => director.state.value.sessionMs >= BAR_ENTRANCE_MS)
 </script>
 
 <template>

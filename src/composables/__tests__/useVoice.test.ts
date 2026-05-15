@@ -8,6 +8,7 @@ import {
   useVoice,
 } from '@/composables/useVoice'
 import {
+  PREFLIGHT_MS,
   __resetDirectorStateForTests,
   createVirtualClock,
   startDirector,
@@ -114,7 +115,7 @@ describe('useVoice — startVoice watch wiring', () => {
 
     expect(useVoice().currentLine.value).toBeNull()
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(useDirector().state.value.act).toBe('flirt')
     expect(useVoice().currentLine.value?.act).toContain('flirt')
 
@@ -129,11 +130,11 @@ describe('useVoice — startVoice watch wiring', () => {
     startVoice()
 
     recordMove(clock.now())
-    clock.advance(800) // sessionMs 800 → flirt
+    clock.advance(PREFLIGHT_MS) // → flirt
     const flirtText = useVoice().currentLine.value?.text
 
     recordMove(clock.now())
-    clock.advance(89_200) // sessionMs 90_000 → settle
+    clock.advance(90_000 - PREFLIGHT_MS) // → settle
     const settleText = useVoice().currentLine.value?.text
 
     for (let t = 90_000; t < 180_000; t += 1000) {
@@ -156,7 +157,7 @@ describe('useVoice — startVoice watch wiring', () => {
     startVoice()
     stopVoice()
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(useVoice().currentLine.value).toBeNull()
 
     stopDirector()
@@ -169,7 +170,7 @@ describe('useVoice — startVoice watch wiring', () => {
     startVoice()
     startVoice()
 
-    clock.advance(800)
+    clock.advance(PREFLIGHT_MS)
     expect(useVoice().history.value).toHaveLength(1)
 
     stopVoice()
