@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useBar } from '@/composables/useBar'
+import { pulseAt, useBar } from '@/composables/useBar'
+import { injectDirector } from '@/composables/useDirector'
 import { cursorX, cursorY } from '@/composables/useStillness'
 
 const bar = useBar()
+const director = injectDirector()
 
 const trackStyle = computed(() => ({
   left: `${String(bar.state.value.positionX)}%`,
@@ -48,10 +50,18 @@ const eyeStyle = computed(() => ({
   left: `${String(eyeOffsetPx.value)}px`,
   opacity: String(eyeIntensity.value),
 }))
+
+const pulse = computed(() => pulseAt(director.state.value.sessionMs))
+
+const pulseStyle = computed(() => ({
+  transform: `scale(${String(pulse.value.scale)})`,
+  opacity: String(pulse.value.alpha),
+}))
 </script>
 
 <template>
   <div class="bar" :style="trackStyle" :data-mood="bar.state.value.mood">
+    <div class="bar-pulse" :style="pulseStyle" />
     <div class="bar-track">
       <div class="bar-fill" :class="{ 'bar-fill-glowing': isGlowing }" :style="fillStyle" />
     </div>
@@ -105,5 +115,19 @@ const eyeStyle = computed(() => ({
   background: radial-gradient(circle, var(--color-bar-bright) 0%, transparent 70%);
   pointer-events: none;
   transition: opacity var(--motion-duration-fast) var(--motion-ease-organic);
+}
+
+.bar-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-glow-warm) 80%, transparent) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  transform-origin: center;
+  filter: blur(8px);
 }
 </style>
