@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useBar } from '@/composables/useBar'
+import { cursorX, cursorY } from '@/composables/useStillness'
 
 const bar = useBar()
 
@@ -17,11 +18,44 @@ const fillStyle = computed(() => ({
 }))
 
 const isGlowing = computed(() => bar.state.value.glowing)
+
+// The looking-back eye — a directional bright spot on the bar that orients
+// toward the cursor. Reads cursor position directly; does not mutate bar state.
+const EYE_FALLOFF_PX = 400
+
+const barCenterPx = computed(() => {
+  const vw = typeof window === 'undefined' ? 1 : window.innerWidth
+  const vh = typeof window === 'undefined' ? 1 : window.innerHeight
+  return {
+    x: (bar.state.value.positionX / 100) * vw,
+    y: (bar.state.value.positionY / 100) * vh,
+  }
+})
+
+const eyeOffsetPx = computed(() => {
+  const left = barCenterPx.value.x - bar.state.value.widthPx / 2
+  return Math.max(0, Math.min(bar.state.value.widthPx, cursorX.value - left))
+})
+
+const eyeIntensity = computed(() => {
+  const dx = cursorX.value - barCenterPx.value.x
+  const dy = cursorY.value - barCenterPx.value.y
+  const d = Math.hypot(dx, dy)
+  return Math.max(0, Math.min(1, 1 - d / EYE_FALLOFF_PX))
+})
+
+const eyeStyle = computed(() => ({
+  left: `${String(eyeOffsetPx.value)}px`,
+  opacity: String(eyeIntensity.value),
+}))
 </script>
 
 <template>
   <div class="bar" :style="trackStyle" :data-mood="bar.state.value.mood">
-    <div class="bar-fill" :class="{ 'bar-fill-glowing': isGlowing }" :style="fillStyle" />
+    <div class="bar-track">
+      <div class="bar-fill" :class="{ 'bar-fill-glowing': isGlowing }" :style="fillStyle" />
+    </div>
+    <div class="bar-eye" :style="eyeStyle" />
   </div>
 </template>
 
@@ -30,15 +64,20 @@ const isGlowing = computed(() => bar.state.value.glowing)
   position: fixed;
   height: var(--size-barHeight);
   transform: translate(-50%, -50%);
-  background: var(--color-bar-track);
-  border-radius: calc(var(--size-barHeight) / 2);
   pointer-events: none;
   z-index: var(--z-overlay);
-  overflow: hidden;
   transition:
     left var(--motion-duration-slow) var(--motion-ease-organic),
     top var(--motion-duration-slow) var(--motion-ease-organic),
     width var(--motion-duration-med) var(--motion-ease-organic);
+}
+
+.bar-track {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bar-track);
+  border-radius: calc(var(--size-barHeight) / 2);
+  overflow: hidden;
 }
 
 .bar-fill {
@@ -54,5 +93,17 @@ const isGlowing = computed(() => bar.state.value.glowing)
 .bar-fill-glowing {
   background: var(--color-bar-bright);
   box-shadow: 0 0 12px var(--color-glow-warm);
+}
+
+.bar-eye {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-bar-bright) 0%, transparent 70%);
+  pointer-events: none;
+  transition: opacity var(--motion-duration-fast) var(--motion-ease-organic);
 }
 </style>
