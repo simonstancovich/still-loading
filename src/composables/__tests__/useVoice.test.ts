@@ -25,9 +25,13 @@ describe('useVoice — eligibleLines', () => {
   })
 
   it('excludes lines whose text is already in the shown set', () => {
-    const all = eligibleLines('flirt', 'playful', new Set())
+    // Show the opener first to get past the opener-only pool to the regular
+    // pool of matching lines.
+    const openers = eligibleLines('flirt', 'playful', new Set())
+    const openerText = openers[0]?.text ?? ''
+    const all = eligibleLines('flirt', 'playful', new Set([openerText]))
     const firstText = all[0]?.text ?? ''
-    const filtered = eligibleLines('flirt', 'playful', new Set([firstText]))
+    const filtered = eligibleLines('flirt', 'playful', new Set([openerText, firstText]))
     expect(filtered.some((l) => l.text === firstText)).toBe(false)
     expect(filtered.length).toBe(all.length - 1)
   })
@@ -170,5 +174,34 @@ describe('useVoice — startVoice watch wiring', () => {
 
     stopVoice()
     stopDirector()
+  })
+})
+
+describe('useVoice — opener priority', () => {
+  beforeEach(() => {
+    __resetVoiceForTests()
+  })
+
+  it('returns only opener lines when an unshown opener exists for the act/mood', () => {
+    const lines = eligibleLines('flirt', 'playful', new Set())
+    expect(lines.length).toBeGreaterThan(0)
+    expect(lines.every((l) => l.opener === true)).toBe(true)
+  })
+
+  it('falls back to all matching lines after the opener has been shown', () => {
+    const openers = eligibleLines('flirt', 'playful', new Set())
+    expect(openers.length).toBeGreaterThan(0)
+    const opener = openers[0]
+    expect(opener).toBeDefined()
+    const next = eligibleLines('flirt', 'playful', new Set([opener?.text ?? '']))
+    expect(next.length).toBeGreaterThan(0)
+    expect(next.some((l) => l.opener === true)).toBe(false)
+  })
+
+  it('scheduleLineForAct picks the opener first for flirt', () => {
+    scheduleLineForAct('flirt', 'playful', 800)
+    const line = useVoice().currentLine.value
+    expect(line?.opener).toBe(true)
+    expect(line?.text).toBe('ah, there you are.')
   })
 })

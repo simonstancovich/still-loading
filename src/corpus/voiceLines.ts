@@ -2,7 +2,13 @@ import type { VoiceLine } from '@/lib/director-types'
 
 export const voiceLines: readonly VoiceLine[] = [
   // ACT I — flirt (playful, tender — the voice is fond of the bar, apologises for it)
-  { text: 'ah, there you are.', act: ['flirt'], mood: ['playful'], role: 'soften' },
+  {
+    text: 'ah, there you are.',
+    act: ['flirt'],
+    mood: ['playful'],
+    role: 'soften',
+    opener: true,
+  },
   { text: "don't look directly at it.", act: ['flirt'], mood: ['playful'], role: 'flirt' },
   { text: '...stop looking.', act: ['flirt'], mood: ['playful'], role: 'tease' },
   { text: 'hold on. almost.', act: ['flirt'], mood: ['playful'], role: 'tease' },
