@@ -57,10 +57,20 @@ const pulseStyle = computed(() => ({
   transform: `scale(${String(pulse.value.scale)})`,
   opacity: String(pulse.value.alpha),
 }))
+
+// Staged entry: the bar is invisible during preflight and fades in once
+// the director enters flirt. Matches the phase-1 design — sec 0 belongs
+// to the cursor + painting hook; the bar arrives at sec 0.8.
+const isVisible = computed(() => director.state.value.act !== 'preflight')
 </script>
 
 <template>
-  <div class="bar" :style="trackStyle" :data-mood="bar.state.value.mood">
+  <div
+    class="bar"
+    :class="{ 'bar-visible': isVisible }"
+    :style="trackStyle"
+    :data-mood="bar.state.value.mood"
+  >
     <div class="bar-pulse" :style="pulseStyle" />
     <div class="bar-track">
       <div class="bar-fill" :class="{ 'bar-fill-glowing': isGlowing }" :style="fillStyle" />
@@ -76,10 +86,16 @@ const pulseStyle = computed(() => ({
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: var(--z-overlay);
+  opacity: 0;
   transition:
+    opacity var(--motion-duration-med) var(--motion-ease-organic),
     left var(--motion-duration-slow) var(--motion-ease-organic),
     top var(--motion-duration-slow) var(--motion-ease-organic),
     width var(--motion-duration-med) var(--motion-ease-organic);
+}
+
+.bar.bar-visible {
+  opacity: 1;
 }
 
 .bar-track {
