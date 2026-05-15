@@ -20,6 +20,7 @@ import { recordMove } from '@/composables/useStillness'
 import { useBar } from '@/composables/useBar'
 import { useVoice } from '@/composables/useVoice'
 import { useRitual } from '@/composables/useRitual'
+import { usePainting } from '@/composables/usePainting'
 import type { Act } from '@/lib/director-types'
 
 const ACTS: readonly Act[] = [
@@ -41,6 +42,11 @@ const director = injectDirector()
 const bar = useBar()
 const voice = useVoice()
 const ritual = useRitual()
+const painting = usePainting()
+
+function togglePainting(): void {
+  painting.isRevealed.value = !painting.isRevealed.value
+}
 
 const debugClock = createVirtualClock(0)
 const seekBase = ref(0)
@@ -115,6 +121,9 @@ const state = computed(() => director.state.value)
     <div class="debug-row">
       <button class="debug-btn" type="button" @click="director.pause()">pause</button>
       <button class="debug-btn" type="button" @click="director.resume()">resume</button>
+      <button class="debug-btn" type="button" @click="togglePainting">
+        {{ painting.isRevealed.value ? 'hide painting' : 'show painting' }}
+      </button>
     </div>
   </aside>
 </template>
