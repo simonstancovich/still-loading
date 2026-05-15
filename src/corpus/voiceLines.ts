@@ -1,28 +1,34 @@
 import type { VoiceLine } from '@/lib/director-types'
 
 export const voiceLines: readonly VoiceLine[] = [
-  // ACT I — flirt (playful)
+  // ACT I — flirt (playful, tender — the voice is fond of the bar, apologises for it)
+  { text: 'ah, there you are.', act: ['flirt'], mood: ['playful'], role: 'soften' },
   { text: "don't look directly at it.", act: ['flirt'], mood: ['playful'], role: 'flirt' },
   { text: '...stop looking.', act: ['flirt'], mood: ['playful'], role: 'tease' },
   { text: 'hold on. almost.', act: ['flirt'], mood: ['playful'], role: 'tease' },
-  { text: 'haha. false alarm.', act: ['flirt'], mood: ['playful'], role: 'tease' },
+  { text: 'ah. no, it lied. sorry.', act: ['flirt'], mood: ['playful'], role: 'tease' },
   { text: 'it does that.', act: ['flirt'], mood: ['playful'], role: 'tease' },
   {
-    text: "i wouldn't trust it if i were you.",
+    text: "don't take it personally. it's just shy.",
     act: ['flirt'],
     mood: ['playful'],
-    role: 'flirt',
+    role: 'soften',
   },
   { text: "it's shy.", act: ['flirt'], mood: ['playful'], role: 'flirt' },
   { text: "give it a second. or don't.", act: ['flirt'], mood: ['playful'], role: 'tease' },
-  { text: 'see? i told you not to look.', act: ['flirt'], mood: ['playful'], role: 'tease' },
+  {
+    text: "see? it doesn't like being watched.",
+    act: ['flirt'],
+    mood: ['playful'],
+    role: 'tease',
+  },
   {
     text: "okay it's definitely doing something now.",
     act: ['flirt'],
     mood: ['playful'],
     role: 'tease',
   },
-  { text: '...that was a lie.', act: ['flirt'], mood: ['playful'], role: 'tease' },
+  { text: '...that was a lie. sorry.', act: ['flirt'], mood: ['playful'], role: 'tease' },
 
   // ACT II — settle (honest)
   { text: "...you're still here?", act: ['settle'], mood: ['honest'], role: 'soften' },
