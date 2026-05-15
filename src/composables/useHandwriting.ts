@@ -1,5 +1,9 @@
-export const MS_PER_GLYPH = 55
-export const FADE_MS = 120
+// Cadence of the letter-by-letter opacity fade (the Phase 1 fallback for the
+// stroke-by-stroke handwriting renderer). Tuned to feel handwritten — slower
+// than typing, deliberately not literal handwriting pace. The 17-char greeting
+// reveals over ~2.8s, slow enough for the user to *watch* the line arrive.
+export const MS_PER_GLYPH = 150
+export const FADE_MS = 350
 
 export interface CharState {
   char: string
