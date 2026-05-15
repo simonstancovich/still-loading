@@ -27,8 +27,8 @@ describe('DebugScrubber.vue', () => {
     const wrapper = mountScrubber()
     expect(wrapper.find('.debug-scrubber').exists()).toBe(true)
     expect(wrapper.find('input.debug-slider').exists()).toBe(true)
-    // 10 act buttons + pause + resume + show/hide painting
-    expect(wrapper.findAll('button.debug-btn')).toHaveLength(13)
+    // 10 act buttons + play + pause + resume + show/hide painting
+    expect(wrapper.findAll('button.debug-btn')).toHaveLength(14)
     wrapper.unmount()
     stopDirector()
   })
