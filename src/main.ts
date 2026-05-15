@@ -5,6 +5,7 @@ import { startStillnessTracking } from '@/composables/useStillness'
 import { startVoice } from '@/composables/useVoice'
 import { startBar } from '@/composables/useBar'
 import { startDust } from '@/composables/useDust'
+import { startPainting } from '@/composables/usePainting'
 import { startRitual } from '@/composables/useRitual'
 import { wireVisibilityToDirector } from '@/main-wiring'
 import { applyTokensAsCssVariables } from '@/styles/apply'
@@ -23,5 +24,6 @@ startStillnessTracking(realClock)
 startVoice()
 startBar()
 startDust()
+startPainting()
 startRitual()
 wireVisibilityToDirector(director)
