@@ -47,6 +47,9 @@ export interface VoiceLine {
   role: 'flirt' | 'tease' | 'soften' | 'ask' | 'hold' | 'gift'
   minStillnessMs?: number
   oncePerSession?: boolean
+  // When true, this line is preferred as the first line scheduled for its
+  // (act, mood) pair. Once shown, the rest of the corpus becomes eligible.
+  opener?: boolean
 }
 
 export type DirectorEvent =

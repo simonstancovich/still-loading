@@ -6,9 +6,13 @@ import type { Act, Mood, VoiceLine } from '@/lib/director-types'
 export const MIN_GAP_MS = 6_000
 
 export function eligibleLines(act: Act, mood: Mood, shown: ReadonlySet<string>): VoiceLine[] {
-  return voiceLines.filter(
+  const matching = voiceLines.filter(
     (line) => line.act.includes(act) && line.mood.includes(mood) && !shown.has(line.text),
   )
+  // If an unshown opener exists for this (act, mood), it is the only
+  // candidate — guarantees the greeting line fires first on entry.
+  const openers = matching.filter((line) => line.opener === true)
+  return openers.length > 0 ? openers : matching
 }
 
 export interface VoiceApi {
