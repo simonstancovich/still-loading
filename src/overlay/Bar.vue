@@ -125,11 +125,14 @@ const isVisible = computed(() => director.state.value.sessionMs >= BAR_ENTRANCE_
 .bar-eye {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--color-bar-bright) 0%, transparent 70%);
+  background: var(--color-ink-base);
+  box-shadow:
+    0 0 8px 2px color-mix(in srgb, var(--color-glow-warm) 55%, transparent),
+    0 0 20px 6px color-mix(in srgb, var(--color-glow-warm) 22%, transparent);
   pointer-events: none;
   transition: opacity var(--motion-duration-fast) var(--motion-ease-organic);
 }
