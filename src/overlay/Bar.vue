@@ -93,7 +93,7 @@ const isVisible = computed(
   z-index: var(--z-overlay);
   opacity: 0;
   transition:
-    opacity var(--motion-duration-slow) var(--motion-ease-organic),
+    opacity var(--motion-duration-med) var(--motion-ease-organic),
     left var(--motion-duration-slow) var(--motion-ease-organic),
     top var(--motion-duration-slow) var(--motion-ease-organic),
     width var(--motion-duration-med) var(--motion-ease-organic);
@@ -103,12 +103,22 @@ const isVisible = computed(
   opacity: 1;
 }
 
+/* The bar's entrance: the track draws outward from the center as a line
+   being inked. Combined with the .bar's opacity fade, the gesture reads
+   as deliberate — not a slow fade-in. */
 .bar-track {
   position: absolute;
   inset: 0;
   background: var(--color-bar-track);
   border-radius: calc(var(--size-barHeight) / 2);
   overflow: hidden;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--motion-duration-med) var(--motion-ease-organic);
+}
+
+.bar.bar-visible .bar-track {
+  transform: scaleX(1);
 }
 
 .bar-fill {
@@ -126,19 +136,30 @@ const isVisible = computed(
   box-shadow: 0 0 12px var(--color-glow-warm);
 }
 
+/* The eye opens via a vertical scale-in once the bar is present —
+   reads as an eyelid lifting, not just a fade. The slight overshoot
+   ease lands with a felt blink. Cursor proximity still drives opacity. */
 .bar-eye {
   position: absolute;
   top: 50%;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
   border-radius: 50%;
   background: var(--color-ink-base);
   box-shadow:
-    0 0 8px 2px color-mix(in srgb, var(--color-glow-warm) 55%, transparent),
-    0 0 20px 6px color-mix(in srgb, var(--color-glow-warm) 22%, transparent);
+    0 0 8px 2px color-mix(in srgb, var(--color-glow-warm) 60%, transparent),
+    0 0 22px 7px color-mix(in srgb, var(--color-glow-warm) 28%, transparent);
   pointer-events: none;
-  transition: opacity var(--motion-duration-fast) var(--motion-ease-organic);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition:
+    opacity var(--motion-duration-fast) var(--motion-ease-organic),
+    transform var(--motion-duration-med) cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+.bar.bar-visible .bar-eye {
+  transform: scaleY(1);
 }
 
 .bar-pulse {
