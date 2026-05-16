@@ -93,7 +93,7 @@ const isVisible = computed(
   z-index: var(--z-overlay);
   opacity: 0;
   transition:
-    opacity var(--motion-duration-med) var(--motion-ease-organic),
+    opacity var(--motion-duration-fast) var(--motion-ease-organic),
     left var(--motion-duration-slow) var(--motion-ease-organic),
     top var(--motion-duration-slow) var(--motion-ease-organic),
     width var(--motion-duration-med) var(--motion-ease-organic);
@@ -103,22 +103,21 @@ const isVisible = computed(
   opacity: 1;
 }
 
-/* The bar's entrance: the track draws outward from the center as a line
-   being inked. Combined with the .bar's opacity fade, the gesture reads
-   as deliberate — not a slow fade-in. */
+/* The bar's entrance: the track gets drawn left-to-right like a loading
+   bar filling itself — matching the piece's central metaphor. The clip
+   reveals more visual punch than a center-out scale on a thin line. */
 .bar-track {
   position: absolute;
   inset: 0;
   background: var(--color-bar-track);
   border-radius: calc(var(--size-barHeight) / 2);
   overflow: hidden;
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform var(--motion-duration-med) var(--motion-ease-organic);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path var(--motion-duration-med) cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .bar.bar-visible .bar-track {
-  transform: scaleX(1);
+  clip-path: inset(0 0 0 0);
 }
 
 .bar-fill {
@@ -136,9 +135,9 @@ const isVisible = computed(
   box-shadow: 0 0 12px var(--color-glow-warm);
 }
 
-/* The eye opens via a vertical scale-in once the bar is present —
-   reads as an eyelid lifting, not just a fade. The slight overshoot
-   ease lands with a felt blink. Cursor proximity still drives opacity. */
+/* The eye opens with a vertical scale-in once the bar has finished
+   drawing itself in. The delay matches the bar-track reveal so the
+   sequence reads as: bar arrives, then turns its gaze to find you. */
 .bar-eye {
   position: absolute;
   top: 50%;
@@ -155,7 +154,7 @@ const isVisible = computed(
   transform-origin: center;
   transition:
     opacity var(--motion-duration-fast) var(--motion-ease-organic),
-    transform var(--motion-duration-med) cubic-bezier(0.34, 1.45, 0.64, 1);
+    transform var(--motion-duration-med) cubic-bezier(0.34, 1.45, 0.64, 1) 400ms;
 }
 
 .bar.bar-visible .bar-eye {
