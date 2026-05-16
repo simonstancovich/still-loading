@@ -121,7 +121,7 @@ export function __registerRitualStateGetter(getter: () => RitualState): void {
 // (see BAR_ENTRANCE_MS in useBar), then the voice greeting arrives when
 // flirt begins. Tuned so the user can *land* in the piece before being
 // addressed.
-export const PREFLIGHT_MS = 3_500
+export const PREFLIGHT_MS = 8_000
 
 function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= PREFLIGHT_MS) {
