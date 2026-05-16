@@ -58,11 +58,15 @@ const pulseStyle = computed(() => ({
   opacity: String(pulse.value.alpha),
 }))
 
-// Staged entry: the bar is invisible until BAR_ENTRANCE_MS so the page
-// begins as cursor + painting alone. The bar arrives before the voice
-// (which fires at PREFLIGHT_MS when flirt begins) — giving the user a
-// beat of bar-with-no-voice before being addressed.
-const isVisible = computed(() => director.state.value.sessionMs >= BAR_ENTRANCE_MS)
+// Staged entry: the bar is invisible while the page is awaiting presence
+// (the "are you here?" prompt is up). The instant the user clicks, the
+// bar begins its slow CSS-driven fade-in. BAR_ENTRANCE_MS adds an optional
+// post-confirm delay (currently 0 — bar morphs in as the prompt morphs out).
+const isVisible = computed(
+  () =>
+    !director.state.value.awaitingPresence &&
+    director.state.value.sessionMs >= BAR_ENTRANCE_MS,
+)
 </script>
 
 <template>

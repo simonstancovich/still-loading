@@ -115,7 +115,15 @@ const state = computed(() => director.state.value)
     </div>
     <div class="debug-row">
       session {{ formatMs(state.sessionMs) }} · still {{ formatMs(state.stillnessMs) }} ·
-      {{ isFrozen ? 'scrubbing' : state.paused ? 'paused' : 'live' }}
+      {{
+        isFrozen
+          ? 'scrubbing'
+          : state.paused
+            ? 'paused'
+            : state.awaitingPresence
+              ? 'awaiting'
+              : 'live'
+      }}
     </div>
     <div class="debug-row">
       bar {{ Math.round(bar.state.value.fillPercent) }}% ·
@@ -149,6 +157,9 @@ const state = computed(() => director.state.value)
       <button class="debug-btn" type="button" @click="director.resume()">resume</button>
       <button class="debug-btn" type="button" @click="togglePainting">
         {{ painting.isRevealed.value ? 'hide painting' : 'show painting' }}
+      </button>
+      <button class="debug-btn" type="button" @click="director.confirmPresence">
+        confirm presence
       </button>
     </div>
   </aside>

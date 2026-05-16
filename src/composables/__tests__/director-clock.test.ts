@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   PREFLIGHT_MS,
   __resetDirectorStateForTests,
+  __setAwaitingPresenceForTests,
   createVirtualClock,
   startDirector,
   stopDirector,
@@ -113,6 +114,44 @@ describe('useDirector — virtual clock + transitions', () => {
     expect(director.state.value.act).toBe('flirt')
 
     clock.advance(1)
+    expect(director.state.value.act).toBe('flirt')
+
+    stopDirector()
+  })
+})
+
+describe('useDirector — presence gate', () => {
+  beforeEach(() => {
+    __resetDirectorStateForTests()
+  })
+
+  it('sessionMs does not advance while awaitingPresence is true', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    __setAwaitingPresenceForTests(true)
+    startDirector(clock)
+
+    clock.advance(10_000)
+    expect(director.state.value.sessionMs).toBe(0)
+    expect(director.state.value.act).toBe('preflight')
+
+    stopDirector()
+  })
+
+  it('confirmPresence flips awaitingPresence and lets sessionMs advance from 0', () => {
+    const clock = createVirtualClock(0)
+    const director = useDirector()
+    __setAwaitingPresenceForTests(true)
+    startDirector(clock)
+
+    clock.advance(5_000)
+    expect(director.state.value.sessionMs).toBe(0)
+
+    director.confirmPresence()
+    expect(director.state.value.awaitingPresence).toBe(false)
+
+    clock.advance(PREFLIGHT_MS)
+    expect(director.state.value.sessionMs).toBe(PREFLIGHT_MS)
     expect(director.state.value.act).toBe('flirt')
 
     stopDirector()

@@ -55,6 +55,7 @@ export interface DirectorApi {
   flagSafetyConcern: () => void
   pause: () => void
   resume: () => void
+  confirmPresence: () => void
 }
 
 function createInitialState(): DirectorState {
@@ -68,6 +69,7 @@ function createInitialState(): DirectorState {
     presenceCount: 1,
     lifetimeCount: 0,
     paused: false,
+    awaitingPresence: true,
   }
 }
 
@@ -117,11 +119,11 @@ export function __registerRitualStateGetter(getter: () => RitualState): void {
   ritualStateGetter = getter
 }
 
-// The pre-phase: cursor + painting alone, then the bar fades in
-// (see BAR_ENTRANCE_MS in useBar), then the voice greeting arrives when
-// flirt begins. Tuned so the user can *land* in the piece before being
-// addressed.
-export const PREFLIGHT_MS = 8_000
+// Measured from the moment the user confirms presence. The bar fades in
+// (over motion-duration-slow), then the voice greeting arrives when flirt
+// begins. The "are you here?" prompt is the deliberate pause — once the
+// user clicks, the piece unfolds smoothly without further synthetic delay.
+export const PREFLIGHT_MS = 4_000
 
 function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= PREFLIGHT_MS) {
@@ -163,7 +165,9 @@ function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct:
 }
 
 function applyTime(now: number): void {
-  if (directorState.value.paused) {
+  // sessionMs does not advance while paused (active runtime pause) or while
+  // awaiting presence (before the user has clicked to begin the piece).
+  if (directorState.value.paused || directorState.value.awaitingPresence) {
     totalPausedMs += now - lastTickAt
     lastTickAt = now
     return
@@ -193,6 +197,9 @@ function buildApi(): DirectorApi {
     },
     resume: () => {
       directorState.value.paused = false
+    },
+    confirmPresence: () => {
+      directorState.value.awaitingPresence = false
     },
   }
 }
@@ -230,15 +237,23 @@ export function injectDirector(): DirectorApi {
 export function __resetDirectorStateForTests(): void {
   stopDirector()
   directorState.value = createInitialState()
+  // Tests run in the post-presence runtime by default — the gate is
+  // exercised in dedicated tests that explicitly set this back to true.
+  directorState.value.awaitingPresence = false
   cachedApi = null
   startedAt = 0
   totalPausedMs = 0
   lastTickAt = 0
 }
 
+export function __setAwaitingPresenceForTests(value: boolean): void {
+  directorState.value.awaitingPresence = value
+}
+
 export function __setActForTests(act: Act, clock: Clock): void {
   enterAct(act)
   directorState.value.sessionMs = 0
+  directorState.value.awaitingPresence = false
   startedAt = clock.now()
   totalPausedMs = 0
   lastTickAt = startedAt

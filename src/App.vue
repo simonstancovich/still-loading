@@ -3,6 +3,7 @@ import Scene from '@/scene/Scene.vue'
 import PaintingCanvas from '@/overlay/PaintingCanvas.vue'
 import Bar from '@/overlay/Bar.vue'
 import Voice from '@/overlay/Voice.vue'
+import PresencePrompt from '@/overlay/PresencePrompt.vue'
 import Ritual from '@/overlay/Ritual.vue'
 import IntimateCorner from '@/overlay/IntimateCorner.vue'
 import PresenceCorner from '@/overlay/PresenceCorner.vue'
@@ -18,6 +19,7 @@ const isDebug = import.meta.env.DEV
   <Scene />
   <PaintingCanvas />
   <Bar />
+  <PresencePrompt />
   <Voice />
   <Ritual />
   <IntimateCorner />
