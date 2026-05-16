@@ -11,12 +11,18 @@ const APPEAR_DELAY_MS = 1_500
 
 const director = injectDirector()
 
-const mountedAt = ref(performance.now())
+// The clock starts at the *first rAF tick after mount*, not at script setup.
+// Vite's dev-server compile can stretch the gap between page-nav-start and
+// first render to several seconds, during which performance.now() keeps
+// counting — a setup-time baseline would skip the appear delay entirely.
+const startAt = ref<number | null>(null)
 const localElapsed = ref(0)
 let rafHandle = 0
 
 const tick = (): void => {
-  localElapsed.value = performance.now() - mountedAt.value
+  const now = performance.now()
+  startAt.value ??= now
+  localElapsed.value = now - startAt.value
   rafHandle = requestAnimationFrame(tick)
 }
 
