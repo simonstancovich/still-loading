@@ -45,6 +45,25 @@ export function startStillnessTracking(clock: Clock): () => void {
   }
 }
 
+// Listens once for any deliberate sign of presence — a click, a touch, or
+// a key press — and calls confirmPresence(), removing itself afterward.
+// Mousemove alone is not enough; we want a chosen gesture.
+export function startPresenceListener(confirmPresence: () => void): () => void {
+  const onPresence = (): void => {
+    confirmPresence()
+    cleanup()
+  }
+  const cleanup = (): void => {
+    window.removeEventListener('mousedown', onPresence)
+    window.removeEventListener('touchstart', onPresence)
+    window.removeEventListener('keydown', onPresence)
+  }
+  window.addEventListener('mousedown', onPresence, { passive: true, once: true })
+  window.addEventListener('touchstart', onPresence, { passive: true, once: true })
+  window.addEventListener('keydown', onPresence, { once: true })
+  return cleanup
+}
+
 export function __resetStillnessForTests(): void {
   lastMoveAt.value = 0
   cursorX.value = 0

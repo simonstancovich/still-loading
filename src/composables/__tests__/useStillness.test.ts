@@ -5,6 +5,7 @@ import {
   cursorY,
   recordCursor,
   recordMove,
+  startPresenceListener,
   useStillness,
 } from '@/composables/useStillness'
 
@@ -56,5 +57,38 @@ describe('useStillness — cursor position', () => {
     __resetStillnessForTests()
     expect(cursorX.value).toBe(0)
     expect(cursorY.value).toBe(0)
+  })
+})
+
+describe('startPresenceListener', () => {
+  it('calls confirm on mousedown and removes itself', () => {
+    let calls = 0
+    const stop = startPresenceListener(() => {
+      calls++
+    })
+    window.dispatchEvent(new MouseEvent('mousedown'))
+    expect(calls).toBe(1)
+    // After the first event the listener is gone — subsequent events do nothing.
+    window.dispatchEvent(new MouseEvent('mousedown'))
+    expect(calls).toBe(1)
+    stop()
+  })
+
+  it('also fires on touchstart and keydown', () => {
+    let calls = 0
+    const stop1 = startPresenceListener(() => {
+      calls++
+    })
+    window.dispatchEvent(new TouchEvent('touchstart'))
+    expect(calls).toBe(1)
+    stop1()
+
+    let calls2 = 0
+    const stop2 = startPresenceListener(() => {
+      calls2++
+    })
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))
+    expect(calls2).toBe(1)
+    stop2()
   })
 })

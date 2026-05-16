@@ -38,6 +38,10 @@ export interface DirectorState {
   presenceCount: number
   lifetimeCount: number
   paused: boolean
+  // True from page load until the user confirms presence (clicks, taps, or
+  // presses any key). While true, sessionMs does not advance and no act
+  // transitions occur. The "are you here?" prompt is visible during this time.
+  awaitingPresence: boolean
 }
 
 export interface VoiceLine {

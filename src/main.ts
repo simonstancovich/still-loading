@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { DIRECTOR_KEY, realClock, startDirector, useDirector } from '@/composables/useDirector'
-import { startStillnessTracking } from '@/composables/useStillness'
+import { startPresenceListener, startStillnessTracking } from '@/composables/useStillness'
 import { startVoice } from '@/composables/useVoice'
 import { startBar } from '@/composables/useBar'
 import { startDust } from '@/composables/useDust'
@@ -21,6 +21,7 @@ app.provide(DIRECTOR_KEY, director)
 app.mount('#app')
 startDirector(realClock)
 startStillnessTracking(realClock)
+startPresenceListener(director.confirmPresence)
 startVoice()
 startBar()
 startDust()
