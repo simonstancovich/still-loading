@@ -89,7 +89,7 @@ const isVisible = computed(() => director.state.value.sessionMs >= BAR_ENTRANCE_
   z-index: var(--z-overlay);
   opacity: 0;
   transition:
-    opacity var(--motion-duration-med) var(--motion-ease-organic),
+    opacity var(--motion-duration-slow) var(--motion-ease-organic),
     left var(--motion-duration-slow) var(--motion-ease-organic),
     top var(--motion-duration-slow) var(--motion-ease-organic),
     width var(--motion-duration-med) var(--motion-ease-organic);
