@@ -21,9 +21,15 @@ const fillStyle = computed(() => ({
 
 const isGlowing = computed(() => bar.state.value.glowing)
 
-// The looking-back eye — a directional bright spot on the bar that orients
-// toward the cursor. Reads cursor position directly; does not mutate bar state.
+// Eye anatomy & gaze tracking. The eye stays centered on the bar; the iris
+// (and pupil + glint) shifts inside the white toward the cursor with
+// eye-physics: directional, saturating, and constrained to the iris's
+// physical room inside the white. The eye fades in proximally — full
+// presence when the cursor is near, soft retreat when it's far away.
 const EYE_FALLOFF_PX = 400
+const IRIS_REACH_PX = 90
+const IRIS_MAX_X = 5
+const IRIS_MAX_Y = 2.2
 
 const barCenterPx = computed(() => {
   const vw = typeof window === 'undefined' ? 1 : window.innerWidth
@@ -34,11 +40,6 @@ const barCenterPx = computed(() => {
   }
 })
 
-const eyeOffsetPx = computed(() => {
-  const left = barCenterPx.value.x - bar.state.value.widthPx / 2
-  return Math.max(0, Math.min(bar.state.value.widthPx, cursorX.value - left))
-})
-
 const eyeIntensity = computed(() => {
   const dx = cursorX.value - barCenterPx.value.x
   const dy = cursorY.value - barCenterPx.value.y
@@ -46,8 +47,24 @@ const eyeIntensity = computed(() => {
   return Math.max(0, Math.min(1, 1 - d / EYE_FALLOFF_PX))
 })
 
+const irisOffset = computed(() => {
+  const dx = cursorX.value - barCenterPx.value.x
+  const dy = cursorY.value - barCenterPx.value.y
+  const d = Math.hypot(dx, dy)
+  if (d < 1) return { x: 0, y: 0 }
+  const factor = Math.min(1, d / IRIS_REACH_PX)
+  return {
+    x: (dx / d) * factor * IRIS_MAX_X,
+    y: (dy / d) * factor * IRIS_MAX_Y,
+  }
+})
+
+const irisCx = computed(() => 12 + irisOffset.value.x)
+const irisCy = computed(() => 8 + irisOffset.value.y)
+const glintCx = computed(() => irisCx.value + 1.3)
+const glintCy = computed(() => irisCy.value - 1.3)
+
 const eyeStyle = computed(() => ({
-  left: `${String(eyeOffsetPx.value)}px`,
   opacity: String(eyeIntensity.value),
 }))
 
@@ -80,7 +97,14 @@ const isVisible = computed(
     <div class="bar-track">
       <div class="bar-fill" :class="{ 'bar-fill-glowing': isGlowing }" :style="fillStyle" />
     </div>
-    <div class="bar-eye" :style="eyeStyle" />
+    <div class="bar-eye" :style="eyeStyle">
+      <svg class="bar-eye-svg" viewBox="0 0 24 16" aria-hidden="true">
+        <ellipse class="bar-eye-white" cx="12" cy="8" rx="11" ry="6.5" />
+        <circle class="bar-eye-iris" :cx="irisCx" :cy="irisCy" r="3.6" />
+        <circle class="bar-eye-pupil" :cx="irisCx" :cy="irisCy" r="1.5" />
+        <circle class="bar-eye-glint" :cx="glintCx" :cy="glintCy" r="0.7" />
+      </svg>
+    </div>
   </div>
 </template>
 
@@ -135,20 +159,18 @@ const isVisible = computed(
   box-shadow: 0 0 12px var(--color-glow-warm);
 }
 
-/* The eye opens with a vertical scale-in once the bar has finished
-   drawing itself in. The delay matches the bar-track reveal so the
-   sequence reads as: bar arrives, then turns its gaze to find you. */
+/* The eye: a proper SVG eye centered on the bar. The outer .bar-eye owns
+   the entrance (eyelid lifting), while the inner .bar-eye-svg breathes and
+   blinks on independent timers. The iris (with pupil + glint) shifts within
+   the white toward the cursor via reactive cx/cy bindings — eye-physics, not
+   1:1 — so the eye reads as a being looking at you, not a cursor follower. */
 .bar-eye {
   position: absolute;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 50%;
-  background: var(--color-ink-base);
-  box-shadow:
-    0 0 8px 2px color-mix(in srgb, var(--color-glow-warm) 60%, transparent),
-    0 0 22px 7px color-mix(in srgb, var(--color-glow-warm) 28%, transparent);
+  left: 50%;
+  margin: -8px 0 0 -12px;
+  width: 24px;
+  height: 16px;
   pointer-events: none;
   transform: scaleY(0);
   transform-origin: center;
@@ -159,6 +181,71 @@ const isVisible = computed(
 
 .bar.bar-visible .bar-eye {
   transform: scaleY(1);
+}
+
+.bar-eye-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: center;
+  filter:
+    drop-shadow(0 0 5px color-mix(in srgb, var(--color-glow-warm) 55%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--color-glow-warm) 22%, transparent));
+  scale: 1;
+  animation:
+    bar-eye-breath 5200ms ease-in-out infinite,
+    bar-eye-blink 6400ms steps(1, end) infinite;
+}
+
+/* `scale` is independent from `transform` — letting breath and blink layer
+   without fighting each other. */
+@keyframes bar-eye-breath {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.035;
+  }
+}
+
+@keyframes bar-eye-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  95%,
+  97% {
+    transform: scaleY(0.06);
+  }
+}
+
+.bar-eye-white {
+  fill: color-mix(in srgb, var(--color-glow-warm) 78%, var(--color-dust-base) 22%);
+  stroke: var(--color-ink-fainter);
+  stroke-width: 0.6;
+}
+
+.bar-eye-iris {
+  fill: var(--color-ink-base);
+  transition:
+    cx var(--motion-duration-fast) var(--motion-ease-organic),
+    cy var(--motion-duration-fast) var(--motion-ease-organic);
+}
+
+.bar-eye-pupil {
+  fill: #000;
+  transition:
+    cx var(--motion-duration-fast) var(--motion-ease-organic),
+    cy var(--motion-duration-fast) var(--motion-ease-organic);
+}
+
+.bar-eye-glint {
+  fill: rgba(255, 255, 255, 0.85);
+  transition:
+    cx var(--motion-duration-fast) var(--motion-ease-organic),
+    cy var(--motion-duration-fast) var(--motion-ease-organic);
 }
 
 .bar-pulse {
