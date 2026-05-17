@@ -26,10 +26,9 @@ describe('useDirector', () => {
     expect(a.state.value).toBe(b.state.value)
   })
 
-  it('initial state starts in preflight', () => {
+  it('initial state starts in preflight at sessionMs 0', () => {
     const director = useDirector()
     expect(director.state.value.act).toBe('preflight')
-    expect(director.state.value.ritual).toBe('idle')
     expect(director.state.value.sessionMs).toBe(0)
   })
 

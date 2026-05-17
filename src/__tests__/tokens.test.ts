@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { applyTokensAsCssVariables, setActPalette } from '@/styles/apply'
-import { flattenTokens, token, tokenAsRgb, tokens } from '@/styles/tokens'
+import { applyTokensAsCssVariables } from '@/styles/apply'
+import { flattenTokens, token, tokenAsRgb } from '@/styles/tokens'
 
 function walk(dir: string, exts: readonly string[]): string[] {
   const out: string[] = []
@@ -34,13 +34,11 @@ describe('tokens — single source of truth', () => {
   it('flattenTokens returns a flat map keyed by dot-paths', () => {
     const flat = flattenTokens()
     expect(flat['color.ink.base']).toBe('#2a2a28')
-    expect(flat['palette.cathedral.base']).toBe('#f0ece2')
     expect(flat['space.3']).toBe('1rem')
   })
 
   it('token() resolves dot-paths to primitive strings', () => {
     expect(token('color.ink.base')).toBe('#2a2a28')
-    expect(token('palette.flirt.warm')).toBe('#f8e7d4')
     expect(token('type.handwriting')).toBe("'Caveat', cursive")
   })
 
@@ -68,16 +66,7 @@ describe('tokens — single source of truth', () => {
     const definedVars = new Set<string>(
       Object.keys(flat).map((p) => p.replaceAll('.', '-')),
     )
-    // Palette runtime variables set by setActPalette — allow these.
-    const runtimeVars = new Set<string>([
-      'palette-current-base',
-      'palette-current-warm',
-      'palette-current-cool',
-      'palette-current-accent',
-    ])
-    const undefined_ = [...usedVars].filter(
-      (v) => !definedVars.has(v) && !runtimeVars.has(v),
-    )
+    const undefined_ = [...usedVars].filter((v) => !definedVars.has(v))
     expect(undefined_, `Undefined CSS variables in src/: ${undefined_.join(', ')}`).toEqual([])
   })
 
@@ -86,13 +75,5 @@ describe('tokens — single source of truth', () => {
     applyTokensAsCssVariables(fakeRoot)
     expect(fakeRoot.style.getPropertyValue('--color-ink-base')).toBe('#2a2a28')
     expect(fakeRoot.style.getPropertyValue('--space-3')).toBe('1rem')
-    expect(fakeRoot.style.getPropertyValue('--palette-current-base')).toBe(tokens.palette.preflight.base)
-  })
-
-  it('setActPalette swaps the palette-current-* variables', () => {
-    const fakeRoot = document.createElement('div')
-    setActPalette('cathedral', fakeRoot)
-    expect(fakeRoot.style.getPropertyValue('--palette-current-base')).toBe(tokens.palette.cathedral.base)
-    expect(fakeRoot.style.getPropertyValue('--palette-current-accent')).toBe(tokens.palette.cathedral.accent)
   })
 })

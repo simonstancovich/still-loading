@@ -1,6 +1,5 @@
 import { inject, readonly, ref, type DeepReadonly, type InjectionKey, type Ref } from 'vue'
-import type { Act, DirectorState, Mood, RitualState } from '@/lib/director-types'
-import { lastMoveAt } from '@/composables/useStillness'
+import type { Act, DirectorState, Mood } from '@/lib/director-types'
 
 export interface Clock {
   now(): number
@@ -50,9 +49,6 @@ export function createVirtualClock(initial = 0): VirtualClock {
 
 export interface DirectorApi {
   state: DeepReadonly<Ref<DirectorState>>
-  submitHate: (text: string) => void
-  submitLove: (text: string) => void
-  flagSafetyConcern: () => void
   pause: () => void
   resume: () => void
   confirmPresence: () => void
@@ -62,12 +58,7 @@ function createInitialState(): DirectorState {
   return {
     act: 'preflight',
     mood: 'playful',
-    ritual: 'idle',
     sessionMs: 0,
-    stillnessMs: 0,
-    visitorTier: 'first',
-    presenceCount: 1,
-    lifetimeCount: 0,
     paused: false,
     awaitingPresence: true,
   }
@@ -101,65 +92,13 @@ function enterAct(act: Act): void {
   directorState.value.act = act
 }
 
-// Ritual hooks are registered by useRitual at module load. The director
-// never imports useRitual directly — that would form an import cycle, since
-// useRitual imports useDirector.
-interface RitualHooks {
-  submitHate: (text: string) => void
-  submitLove: (text: string) => void
-}
-let ritualHooks: RitualHooks | null = null
-let ritualStateGetter: (() => RitualState) | null = null
-
-export function __registerRitualHooks(hooks: RitualHooks): void {
-  ritualHooks = hooks
-}
-
-export function __registerRitualStateGetter(getter: () => RitualState): void {
-  ritualStateGetter = getter
-}
-
-// Measured from the moment the user confirms presence. The bar fades in
-// (over motion-duration-slow), then the voice greeting arrives when flirt
-// begins. The "are you here?" prompt is the deliberate pause — once the
-// user clicks, the piece unfolds smoothly without further synthetic delay.
+// Act thresholds — only sessionMs-driven for now. Stillness-gated and
+// ritual-gated transitions will be re-added when those systems exist.
 export const PREFLIGHT_MS = 4_000
 
-function evaluateTransitions(sessionMs: number, stillnessMs: number, currentAct: Act): void {
+function evaluateTransitions(sessionMs: number, currentAct: Act): void {
   if (currentAct === 'preflight' && sessionMs >= PREFLIGHT_MS) {
     enterAct('flirt')
-    return
-  }
-  if (currentAct === 'flirt' && sessionMs >= 90_000) {
-    enterAct('settle')
-    return
-  }
-  if (currentAct === 'settle' && (sessionMs >= 180_000 || stillnessMs >= 8_000)) {
-    enterAct('cathedral')
-    return
-  }
-  if (currentAct === 'cathedral' && sessionMs >= 390_000 && stillnessMs >= 4_000) {
-    enterAct('invite')
-    return
-  }
-  if (currentAct === 'invite' && ritualStateGetter && ritualStateGetter() !== 'idle') {
-    enterAct('ritual')
-    return
-  }
-  if (currentAct === 'ritual' && ritualStateGetter && ritualStateGetter() === 'resolved') {
-    enterAct('held')
-    return
-  }
-  if (currentAct === 'held' && sessionMs >= 600_000) {
-    enterAct('secondCathedral')
-    return
-  }
-  if (currentAct === 'secondCathedral' && sessionMs >= 690_000) {
-    enterAct('ending')
-    return
-  }
-  if (currentAct === 'ending' && sessionMs >= 720_000) {
-    enterAct('longTail')
     return
   }
 }
@@ -174,24 +113,13 @@ function applyTime(now: number): void {
   }
   lastTickAt = now
   const sessionMs = now - startedAt - totalPausedMs
-  const stillnessMs = Math.max(0, now - lastMoveAt.value)
   directorState.value.sessionMs = sessionMs
-  directorState.value.stillnessMs = stillnessMs
-  evaluateTransitions(sessionMs, stillnessMs, directorState.value.act)
+  evaluateTransitions(sessionMs, directorState.value.act)
 }
 
 function buildApi(): DirectorApi {
   return {
     state: readonly(directorState),
-    submitHate: (text: string) => {
-      ritualHooks?.submitHate(text)
-    },
-    submitLove: (text: string) => {
-      ritualHooks?.submitLove(text)
-    },
-    flagSafetyConcern: () => {
-      throw new Error('useDirector.flagSafetyConcern: not implemented')
-    },
     pause: () => {
       directorState.value.paused = true
     },
@@ -248,13 +176,4 @@ export function __resetDirectorStateForTests(): void {
 
 export function __setAwaitingPresenceForTests(value: boolean): void {
   directorState.value.awaitingPresence = value
-}
-
-export function __setActForTests(act: Act, clock: Clock): void {
-  enterAct(act)
-  directorState.value.sessionMs = 0
-  directorState.value.awaitingPresence = false
-  startedAt = clock.now()
-  totalPausedMs = 0
-  lastTickAt = startedAt
 }
