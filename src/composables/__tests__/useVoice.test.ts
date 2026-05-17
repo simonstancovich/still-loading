@@ -176,6 +176,33 @@ describe('useVoice — startVoice watch wiring', () => {
     stopVoice()
     stopDirector()
   })
+
+  it('cycles to a new line within the same act once MIN_GAP_MS has elapsed', () => {
+    const clock = createVirtualClock(0)
+    useDirector()
+    startDirector(clock)
+    startVoice()
+
+    clock.advance(PREFLIGHT_MS) // → flirt, opener fires
+    const opener = useVoice().currentLine.value?.text
+    expect(opener).toBe('ah, there you are.')
+
+    // Advance past MIN_GAP_MS while staying inside the flirt act
+    clock.advance(7_000)
+    const second = useVoice().currentLine.value?.text
+    expect(second).not.toBe(opener)
+    expect(useVoice().currentLine.value?.act).toContain('flirt')
+
+    // And another one
+    clock.advance(7_000)
+    const third = useVoice().currentLine.value?.text
+    expect(third).not.toBe(opener)
+    expect(third).not.toBe(second)
+    expect(useVoice().history.value.length).toBeGreaterThanOrEqual(3)
+
+    stopVoice()
+    stopDirector()
+  })
 })
 
 describe('useVoice — opener priority', () => {
