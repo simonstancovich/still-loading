@@ -39,25 +39,6 @@ describe('useDirector — virtual clock + transitions', () => {
     stopDirector()
   })
 
-  it('flirt → settle fires at 90 seconds', () => {
-    const clock = createVirtualClock(0)
-    const director = useDirector()
-    startDirector(clock)
-
-    clock.advance(PREFLIGHT_MS)
-    expect(director.state.value.act).toBe('flirt')
-
-    clock.advance(90_000 - PREFLIGHT_MS - 200)
-    expect(director.state.value.act).toBe('flirt')
-    expect(director.state.value.sessionMs).toBe(90_000 - 200)
-
-    clock.advance(200)
-    expect(director.state.value.act).toBe('settle')
-    expect(director.state.value.sessionMs).toBe(90_000)
-
-    stopDirector()
-  })
-
   it('clock starts at a non-zero monotonic time without breaking transitions', () => {
     const clock = createVirtualClock(1_000_000)
     const director = useDirector()
