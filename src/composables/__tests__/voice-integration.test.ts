@@ -36,9 +36,11 @@ describe('voice integration — director drives a revealing line', () => {
     expect(elapsed0).toBe(0)
     expect(charStates(line?.text ?? '', elapsed0).every((c) => c.opacity === 0)).toBe(true)
 
-    clock.advance(10_000)
+    // Advance less than MIN_GAP_MS so the opener line persists while it
+    // reveals (the voice scheduler now cycles within an act after MIN_GAP_MS).
+    clock.advance(5_000)
     const elapsed1 = director.state.value.sessionMs - voice.currentLineStartedMs.value
-    expect(elapsed1).toBe(10_000)
+    expect(elapsed1).toBe(5_000)
     expect(charStates(line?.text ?? '', elapsed1).every((c) => c.opacity === 1)).toBe(true)
 
     stopVoice()

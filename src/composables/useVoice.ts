@@ -53,8 +53,11 @@ let watchStop: (() => void) | null = null
 export function startVoice(): void {
   if (watchStop) return
   const director = useDirector()
+  // Watch both act AND sessionMs so the voice cycles through the corpus
+  // *within* an act, not only at act transitions. MIN_GAP_MS in
+  // scheduleLineForAct throttles tick-driven calls so lines don't pile up.
   watchStop = watch(
-    () => director.state.value.act,
+    [() => director.state.value.act, () => director.state.value.sessionMs],
     () => {
       scheduleLineForAct(
         director.state.value.act,
